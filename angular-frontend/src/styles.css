@@ -1,4 +1,115 @@
 /* You can add global styles to this file, and also import other style files */
-
-html, body { height: 100%; }
+/* optional body: padding-top: 30px; */
+html, body {height: 80%; width: 100%;}
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+/* Set table color + padding */
+th, td {
+border: 1px solid rgb(160 160 160);
+padding: 8px 10px;
+}
+
+th[scope="col"] {
+background-color: #505050;
+color: #fff;
+}
+
+th[scope="row"] {
+background-color: #7f817f;
+}
+/*
+tr:nth-of-type(odd) td {
+background-color: #eee;
+}
+*/
+
+.button {
+border: 0;
+line-height: 5.5;
+padding: 0 20px;
+font-size: 1rem;
+text-align: center;
+color: #fff;
+text-shadow: 1px 1px 1px #000;
+border-radius: 25px;
+background-color: rgba(235,62,54,255);
+background-image: linear-gradient(
+  to top left,
+  rgba(0, 0, 0, 0.2),
+  rgba(0, 0, 0, 0.2) 30%,
+  rgba(0, 0, 0, 0)
+);
+box-shadow:
+  inset 2px 2px 3px rgba(255, 255, 255, 0.6),
+  inset -2px -2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.big-btn{
+width: 15%;
+height: 100%;
+}
+
+.button:hover {
+background-color: rgba(235,82,74,255);
+}
+
+.button:active {
+box-shadow:
+  inset -2px -2px 3px rgba(255, 255, 255, 0.6),
+  inset 2px 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+
+/* define popup windows for modular pop-ups */
+
+#analyse {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.analyse-content {
+  text-align: justify;
+  background: white;
+  margin: 5% auto;
+  padding: 40px;
+  width: 40%;
+  height: 40%;
+  border-radius: 30px;
+}
+
+#info {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.info-content {
+  text-align: justify;
+  background: white;
+  margin: 5% auto;
+  padding: 40px;
+  width: 40%;
+  height: 40%;
+  border-radius: 30px;
+}
+
+label.checkbox-text{
+  margin-left: 2em;
+  display: block;
+  position: relative;
+  margin-top: -1.4em;
+  line-height: 1.4em;
+  
+}
