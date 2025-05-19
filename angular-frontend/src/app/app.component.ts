@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MouseTrackerComponent } from './shared/mouse-tracker/mouse-tracker.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet,MouseTrackerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true
