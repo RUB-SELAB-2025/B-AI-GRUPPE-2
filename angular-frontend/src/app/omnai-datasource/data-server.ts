@@ -35,7 +35,7 @@ export interface DataServer {
    * @param endTime end time of the data
    * @param precision if specified, reduces the data points per second to the given precision
    */
-  getData(startTime: number, endTime: number, precision?: number): SessionData[]
+  getData(startTime: number, endTime: number, precision?: number): Promise<SessionData[]>
 
   /**
    * Get the data available within a certain time frame.
@@ -45,7 +45,7 @@ export interface DataServer {
    * @param duration amount of time represented by the data
    * @param precision if specified, reduces the data points per second to the given precision
    */
-  getDataWindow(startTime: number, duration: number, precision?: number): SessionData[]
+  getDataWindow(startTime: number, duration: number, precision?: number): Promise<SessionData[]>
 
   /**
    * Get sessions when data was recorded.
@@ -55,7 +55,7 @@ export interface DataServer {
    *
    * @returns all sessions when data was recorded, ordered by ascending start time
    */
-  getSessions(startTime?: number, endTime?: number): { startTime: number, endTime: number }[]
+  getSessions(startTime?: number, endTime?: number): Promise<{ startTime: number, endTime: number }[]>
 
   /**
    * Get sessions when data was recorded.
@@ -65,11 +65,11 @@ export interface DataServer {
    *
    * @returns all sessions when data was recorded, ordered by ascending start time
    */
-  getSessionWindow(startTime?: number, duration?: number): { startTime: number, endTime: number }[]
+  getSessionWindow(startTime?: number, duration?: number): Promise<{ startTime: number, endTime: number }[]>
 
   /** Pause data retrieval. */
-  pause(): void
+  pause(): Promise<void>
 
   /** Continue data retrieval. */
-  play(): void
+  play(): Promise<void>
 }

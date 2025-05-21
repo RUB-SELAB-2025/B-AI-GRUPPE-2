@@ -118,13 +118,13 @@ export class DummyDataService implements DataServer {
     })
   }
 
-  public play() {
+  public async play() {
     if (this.channels().length !== 0) {
       this.#paused.set(false)
     }
   }
 
-  public pause() {
+  public async pause() {
     this.#paused.set(true)
   }
 
@@ -208,7 +208,7 @@ export class DummyDataService implements DataServer {
     }
   }
 
-  public getData(startTime: number, endTime: number, precision: number = 0): SessionData[] {
+  public async getData(startTime: number, endTime: number, precision: number = 0): Promise<SessionData[]> {
     if (endTime <= startTime)
       return []
 
@@ -256,7 +256,7 @@ export class DummyDataService implements DataServer {
     return dataCopy
   }
 
-  public getDataWindow(startTime: number, duration: number, precision: number = 0): SessionData[] {
+  public async getDataWindow(startTime: number, duration: number, precision: number = 0): Promise<SessionData[]> {
     if (duration <= 0)
       return []
 
@@ -300,11 +300,11 @@ export class DummyDataService implements DataServer {
     return sessions
   }
 
-  public getSessions(startTime: number = 0, endTime: number = Number.POSITIVE_INFINITY): { startTime: number; endTime: number; }[] {
+  public async getSessions(startTime: number = 0, endTime: number = Number.POSITIVE_INFINITY): Promise<{ startTime: number; endTime: number; }[]> {
     return this.getData(startTime, endTime)
   }
 
-  public getSessionWindow(startTime: number = 0, duration: number = Number.POSITIVE_INFINITY): { startTime: number; endTime: number; }[] {
+  public async getSessionWindow(startTime: number = 0, duration: number = Number.POSITIVE_INFINITY): Promise<{ startTime: number; endTime: number; }[]> {
     return this.getDataWindow(startTime, duration)
   }
 }
