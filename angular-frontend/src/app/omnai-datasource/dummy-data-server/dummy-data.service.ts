@@ -82,7 +82,11 @@ export class DummyDataService implements DataServer {
         interval = null
       }
 
-      if (!this.paused()) {
+      if (this.paused()) {
+        const session = this.#data[this.#data.length - 1]
+        if (session.endTime === -1)
+          session.endTime = Date.now()
+      } else {
         let session = this.#data[this.#data.length - 1]
         if (session.endTime !== -1) {
           const data: {
