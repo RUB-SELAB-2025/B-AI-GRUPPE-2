@@ -49,29 +49,10 @@
         <label for="mousePos" class="checkbox-text">Position der Maus</label>
 
         <button onclick="document.getElementById('info').style.display='none'">Schließen</button>
-        <button onclick="anwenden()">Anwenden</button>
+        <button (click)="anwenden()">Anwenden</button>
       </div>
     </div>
   </div>
-  <script>
-    function anwenden() {
-      const abtast = document.getElementById('abtast').checked;
-      const projInfo = document.getElementById('proj-info').checked;
-      const mousePos = document.getElementById('mousePos').checked;
-      const infoBox = document.getElementById('info');
 
-      console.log("Abtastrate:", abtast);
-      console.log("Projekt Info:", projInfo);
-
-      if(mousePos){
-        ;
-      }
-
-
-      //Ausblenden des Info-Menues
-      infoBox.style.display = 'none';
-    }
-  </script>
-
-<app-mouse-tracker></app-mouse-tracker>
+<app-mouse-tracker id="mouseTracker" style="display: none;"></app-mouse-tracker>
 
