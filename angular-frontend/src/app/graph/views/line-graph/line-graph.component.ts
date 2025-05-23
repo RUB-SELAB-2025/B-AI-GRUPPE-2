@@ -240,7 +240,7 @@ export class LineGraphComponent {
    *
    * @returns the color and path
    */
-  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData): {
+  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData, precision?: number): {
     color: string,
     path: string,
   } | null {
@@ -249,7 +249,10 @@ export class LineGraphComponent {
     const dots: [number, number][] = []
     for (const stream of channelData.streams) {
       for (let i = 0; i < stream.values.length; i++) {
-        const x = width / (end - start) * ((stream.start + i * this.sampleDelay(channelData.channel)) - start)
+        const sampleDelay = (precision)
+          ? 1000 / precision
+          : this.sampleDelay(channelData.channel)
+        const x = width / (end - start) * ((stream.start + i * sampleDelay) - start)
         const y = height - height / (max - min) * (stream.values[i] - min)
         dots.push([x, y])
       }
@@ -277,14 +280,14 @@ export class LineGraphComponent {
    * @param height svg height
    * @param data data to be drawn
    */
-  private drawLines(start: number, end: number, width: number, height: number, data: Data) {
+  private drawLines(start: number, end: number, width: number, height: number, data: Data, precision?: number) {
 
     const drawn: { color: string, path: string }[] = []
 
     for (const channelData of data) {
       const { max, min } = this.channels[channelData.channel.id].viewedScale
 
-      const path = this.drawLine(start, end, width, height, min, max, channelData)
+      const path = this.drawLine(start, end, width, height, min, max, channelData, precision)
 
       if (path) {
         drawn.push(path)
@@ -382,19 +385,24 @@ export class LineGraphComponent {
     const width = this.$svgWidth()
     const height = this.$svgHeight()
 
-    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: 100 })
+    const precision = 100
+
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision })
 
     const data = this.processData(rawData)
 
     if (this.isDataEmpty(data))
       return
 
+    if (Math.floor(start) % 32 === 0)
+      console.log(data[0].streams[0].values.length)
+
     this.addNewChannels(data)
 
     this.updateTargetScales(data)
     this.updateViewedScales(delta)
 
-    this.drawLines(start, end, width, height, data)
+    this.drawLines(start, end, width, height, data, precision)
     this.drawAxis(start, end, width)
   }
 }
