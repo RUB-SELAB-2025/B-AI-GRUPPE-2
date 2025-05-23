@@ -27,12 +27,17 @@ export type SessionOptions = { startTime: number, endTime: number } | { startTim
 export type DataOptions = SessionOptions & { precision?: number }
 
 export interface DataServer {
+  /** All channels that were at some point alive. */
   readonly channels: Signal<Channel[]>
+  /** All channels that are currently alive. */
   readonly aliveChannels: Signal<Channel[]>
+  /** Whether to pause data retrieval. */
   readonly paused: Signal<boolean>
 
+  /** Get all data within a specified time frame. */
   getData(options?: DataOptions): Promise<SessionData[]>
 
+  /** Get all sessions of data retrieval within a specified time frame. */
   getSessions(options?: SessionOptions): Promise<{ startTime: number, endTime: number }[]>
 
   /** Pause data retrieval. */

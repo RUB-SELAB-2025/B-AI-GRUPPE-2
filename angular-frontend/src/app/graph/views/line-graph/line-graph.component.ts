@@ -4,6 +4,7 @@ import { ResizeObserverDirective } from '../../../shared/resize-observer.directi
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 
+/** How many datapoints the graph data should be reduced to */
 const DISPLAY_PRECISION = 200
 /** How close should two scales have to be to be set equal */
 const ROUNDING_ERROR_FRACTION = 1000
