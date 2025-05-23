@@ -252,7 +252,7 @@ export class DataStreamService implements DataServer {
     if (sessions.length === 0)
       return []
     else
-      return this.getDataRange(sessions[0].startTime, sessions[sessions.length - 1].endTime)
+      return this.getDataRange(sessions[0].startTime, sessions[sessions.length - 1].endTime, options?.precision)
   }
 
   private async getDataRange(startTime: number, endTime: number, precision: number = 0): Promise<SessionData[]> {
