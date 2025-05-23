@@ -150,9 +150,9 @@ export class LineGraphComponent {
    * Gets the currently viewed time frame.
    */
   private getViewTime(): { start: number, end: number } {
-    const end = (typeof this.viewedTime.end === "number")
-      ? this.viewedTime.end
-      : Date.now()
+    const end = (this.viewedTime.end === null || this.viewedTime.end === -1)
+      ? Date.now()
+      : this.viewedTime.end
     const start = end - this.viewedTime.amount
     return { start, end }
   }
@@ -378,10 +378,11 @@ export class LineGraphComponent {
    */
   private async drawImmediately(delta: number = 1) {
     const { start, end } = this.getViewTime()
+
     const width = this.$svgWidth()
     const height = this.$svgHeight()
 
-    const rawData = await this.dataSource.getData({ startTime: start, endTime: end, precision: 100 })
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: 100 })
 
     const data = this.processData(rawData)
 
@@ -394,7 +395,6 @@ export class LineGraphComponent {
     this.updateViewedScales(delta)
 
     this.drawLines(start, end, width, height, data)
-
     this.drawAxis(start, end, width)
   }
 }
