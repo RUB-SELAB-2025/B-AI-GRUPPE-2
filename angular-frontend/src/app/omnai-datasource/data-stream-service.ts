@@ -289,6 +289,11 @@ export class DataStreamService implements DataServer {
 
     const viewedData = cutData.slice(startIndex, endIndex + 1)
 
+    for (let i = viewedData.length - 1; i >= 0; i--) {
+      if (viewedData[i].data.length === 0)
+        viewedData.splice(i, 1)
+    }
+
     if (viewedData.length === 0)
       return []
 
