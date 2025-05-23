@@ -4,6 +4,7 @@ import { ResizeObserverDirective } from '../../../shared/resize-observer.directi
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 
+const DISPLAY_PRECISION = 200
 /** How close should two scales have to be to be set equal */
 const ROUNDING_ERROR_FRACTION = 1000
 /** How slowly should the scale adjust */
@@ -385,9 +386,7 @@ export class LineGraphComponent {
     const width = this.$svgWidth()
     const height = this.$svgHeight()
 
-    const precision = 100
-
-    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision })
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION })
 
     const data = this.processData(rawData)
 
@@ -402,7 +401,7 @@ export class LineGraphComponent {
     this.updateTargetScales(data)
     this.updateViewedScales(delta)
 
-    this.drawLines(start, end, width, height, data, precision)
+    this.drawLines(start, end, width, height, data, DISPLAY_PRECISION)
     this.drawAxis(start, end, width)
   }
 }

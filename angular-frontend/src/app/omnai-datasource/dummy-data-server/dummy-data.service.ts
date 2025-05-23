@@ -1,7 +1,7 @@
 import { effect, Injectable, signal, WritableSignal } from "@angular/core"
 import { DataStream, DataStreamService } from "../data-stream-service"
 
-const SAMPLE_RATE = 200
+const SAMPLE_RATE = 1000
 const DUMMY_CHANNELS = [{
   id: "111",
   offset: 3,
