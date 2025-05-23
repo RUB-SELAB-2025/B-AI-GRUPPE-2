@@ -1,7 +1,8 @@
-import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, signal, viewChild, WritableSignal } from '@angular/core';
 import * as d3 from 'd3';
-import { LineDataService } from './line-data.service';
 import { ResizeObserverDirective } from '../../../shared/resize-observer.directive';
+import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
+import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 
 /** How close should two scales have to be to be set equal */
 const ROUNDING_ERROR_FRACTION = 1000
@@ -17,12 +18,12 @@ type Stream = {
   values: number[]
 }
 
-type Channel = {
-  id: number
+type ChannelData = {
+  channel: Channel
   streams: Stream[]
 }
 
-type Data = Channel[]
+type Data = ChannelData[]
 
 /**
  * Metadata of a single channel.
@@ -71,19 +72,19 @@ class ChannelView {
   selector: 'app-line-graph',
   imports: [ResizeObserverDirective],
   standalone: true,
-  providers: [LineDataService],
+  providers: [DummyDataService],
   templateUrl: './line-graph.component.html',
   styleUrl: './line-graph.component.css'
 })
 export class LineGraphComponent {
   readonly xAxis = viewChild.required<ElementRef<SVGGElement>>('xAxis');
 
-  private readonly dataSource = inject(LineDataService);
+  private readonly dataSource: DataServer = inject(DummyDataService);
 
   private readonly $svgWidth = signal(300)
   private readonly $svgHeight = signal(150)
 
-  private readonly channels: { [id: number]: ChannelView } = {}
+  private readonly channels: { [id: string]: ChannelView } = {}
 
   /**
    * The viewed time; effectively the x axis.
@@ -93,8 +94,8 @@ export class LineGraphComponent {
   private viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
 
   constructor() {
-    const drawLoop = () => {
-      this.draw()
+    const drawLoop = async () => {
+      await this.draw()
       requestAnimationFrame(drawLoop)
     }
     drawLoop()
@@ -160,10 +161,10 @@ export class LineGraphComponent {
    * Adjusts the target scales to fit the entirety of the data
    */
   private updateTargetScales(data: Data) {
-    for (const channel of data) {
+    for (const channelData of data) {
       let min = Number.POSITIVE_INFINITY
       let max = Number.NEGATIVE_INFINITY
-      for (const stream of channel.streams) {
+      for (const stream of channelData.streams) {
         for (const value of stream.values) {
           if (value < min) min = value
           if (value > max) max = value
@@ -171,8 +172,8 @@ export class LineGraphComponent {
       }
       const padding = (max - min) / VIEW_SCALE_PADDING
 
-      this.channels[channel.id].targetScale.min = min - padding
-      this.channels[channel.id].targetScale.max = max + padding
+      this.channels[channelData.channel.id].targetScale.min = min - padding
+      this.channels[channelData.channel.id].targetScale.max = max + padding
     }
   }
 
@@ -194,24 +195,28 @@ export class LineGraphComponent {
    *
    * @param delta the time passed since the last draw
    */
-  private draw(delta: number = 1) {
+  private async draw(delta: number = 1) {
     if (this.drawState !== "ready") {
       this.drawState = "scheduled"
       return
     }
 
-    this.drawImmediately(delta)
+    await this.drawImmediately(delta)
 
     this.drawState = (this.viewedTime.end === null)
       ? "scheduled"
       : "cooldown"
 
-    requestAnimationFrame(delta => {
+    requestAnimationFrame(async delta => {
       const scheduled = (this.drawState === "scheduled")
       this.drawState = "ready"
       if (scheduled)
-        this.draw(delta)
+        await this.draw(delta)
     })
+  }
+
+  private sampleDelay(channel: Channel): number {
+    return 1000 / channel.sampleRate()
   }
 
   /**
@@ -231,20 +236,20 @@ export class LineGraphComponent {
    * @param height svg height
    * @param min smallest value visible by scale
    * @param max largest value visible by scale
-   * @param channel channel to be drawn
+   * @param channelData channel to be drawn
    *
    * @returns the color and path
    */
-  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channel: Channel): {
+  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData): {
     color: string,
     path: string,
   } | null {
-    const color = this.channels[channel.id].$color()
+    const color = this.channels[channelData.channel.id].$color()
 
     const dots: [number, number][] = []
-    for (const stream of channel.streams) {
+    for (const stream of channelData.streams) {
       for (let i = 0; i < stream.values.length; i++) {
-        const x = width / (end - start) * ((stream.start + i * this.dataSource.$sampleDelay()) - start)
+        const x = width / (end - start) * ((stream.start + i * this.sampleDelay(channelData.channel)) - start)
         const y = height - height / (max - min) * (stream.values[i] - min)
         dots.push([x, y])
       }
@@ -276,10 +281,10 @@ export class LineGraphComponent {
 
     const drawn: { color: string, path: string }[] = []
 
-    for (const channel of data) {
-      const { max, min } = this.channels[channel.id].viewedScale
+    for (const channelData of data) {
+      const { max, min } = this.channels[channelData.channel.id].viewedScale
 
-      const path = this.drawLine(start, end, width, height, min, max, channel)
+      const path = this.drawLine(start, end, width, height, min, max, channelData)
 
       if (path) {
         drawn.push(path)
@@ -331,12 +336,39 @@ export class LineGraphComponent {
    * Adds new `ChannelView`s if necessary.
    */
   private addNewChannels(data: Data) {
-    for (const channel of data) {
-      if (!(channel.id in this.channels)) {
+    for (const channelData of data) {
+      if (!(channelData.channel.id in this.channels)) {
         const hue = this.getNewChannelHue()
-        this.channels[channel.id] = new ChannelView(hue)
+        this.channels[channelData.channel.id] = new ChannelView(hue)
       }
     }
+  }
+
+  private processData(data: SessionData[]): Data {
+    const channels: Map<Channel, ChannelData> = new Map()
+
+    for (const session of data) {
+      for (const channelData of session.data) {
+        if (!channels.has(channelData.channel)) {
+          channels.set(channelData.channel, {
+            channel: channelData.channel,
+            streams: []
+          })
+        }
+        const streams = channels.get(channelData.channel)!.streams
+        streams.push({
+          start: session.startTime,
+          values: channelData.values
+        })
+      }
+    }
+
+    const processed: ChannelData[] = []
+    for (const channel of channels.values()) {
+      processed.push(channel)
+    }
+
+    return processed
   }
 
   /**
@@ -344,12 +376,14 @@ export class LineGraphComponent {
    *
    * @param delta the time passed since the last draw
    */
-  private drawImmediately(delta: number = 1) {
+  private async drawImmediately(delta: number = 1) {
     const { start, end } = this.getViewTime()
     const width = this.$svgWidth()
     const height = this.$svgHeight()
 
-    const data: Data = this.dataSource.getData(start, end, 100)
+    const rawData = await this.dataSource.getData({ startTime: start, endTime: end, precision: 100 })
+
+    const data = this.processData(rawData)
 
     if (this.isDataEmpty(data))
       return
