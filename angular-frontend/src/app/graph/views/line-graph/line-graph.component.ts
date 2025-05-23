@@ -394,9 +394,6 @@ export class LineGraphComponent {
     if (this.isDataEmpty(data))
       return
 
-    if (Math.floor(start) % 32 === 0)
-      console.log(data[0].streams[0].values.length)
-
     this.addNewChannels(data)
 
     this.updateTargetScales(data)
