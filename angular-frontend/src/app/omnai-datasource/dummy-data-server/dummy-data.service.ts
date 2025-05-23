@@ -3,16 +3,16 @@ import { DataStream, DataStreamService } from "../data-stream-service"
 
 const SAMPLE_RATE = 100
 const DUMMY_CHANNELS = [{
-      id: "111",
-      offset: 3,
-      frequency: 5,
-      amplification: 1
-    }, {
-      id: "222",
-      offset: 7,
-      frequency: 7,
-      amplification: 2
-    }]
+  id: "111",
+  offset: 3,
+  frequency: 5,
+  amplification: 1
+}, {
+  id: "222",
+  offset: 7,
+  frequency: 7,
+  amplification: 2
+}]
 
 const SIN_CONST = 2 * Math.PI / 1000
 
@@ -48,9 +48,10 @@ class DummyDataStream implements DataStream {
 
       if (lastPush !== -1) {
         const now = Date.now()
-        this.#lastPush = now
+        const currentPush = now - now % this.#timePerSample
+        this.#lastPush = currentPush
 
-        for (let time = lastPush + 1; time <= now; time += this.#timePerSample) {
+        for (let time = lastPush + this.#timePerSample; time <= currentPush; time += this.#timePerSample) {
           const data = []
           for (const channel of channels) {
             data.push({
