@@ -23,49 +23,17 @@ export type ChannelData = {
   values: number[]
 }
 
+export type SessionOptions = { startTime: number, endTime: number } | { startTime: number, duration: number } | { endTime: number, duration: number }
+export type DataOptions = SessionOptions & { precision?: number }
+
 export interface DataServer {
   readonly channels: Signal<Channel[]>
   readonly aliveChannels: Signal<Channel[]>
   readonly paused: Signal<boolean>
 
-  /**
-   * Get the data available between the given start and end time.
-   *
-   * @param startTime start time of the data
-   * @param endTime end time of the data
-   * @param precision if specified, reduces the data points per second to the given precision
-   */
-  getData(startTime: number, endTime: number, precision?: number): Promise<SessionData[]>
+  getData(options?: DataOptions): Promise<SessionData[]>
 
-  /**
-   * Get the data available within a certain time frame.
-   * Pauses within the time frame are skipped.
-   *
-   * @param startTime start time of the data
-   * @param duration amount of time represented by the data
-   * @param precision if specified, reduces the data points per second to the given precision
-   */
-  getDataWindow(startTime: number, duration: number, precision?: number): Promise<SessionData[]>
-
-  /**
-   * Get sessions when data was recorded.
-   *
-   * @param startTime only retrieve sessions past this time (optional)
-   * @param endTime only retrieve sessions before this time (optional)
-   *
-   * @returns all sessions when data was recorded, ordered by ascending start time
-   */
-  getSessions(startTime?: number, endTime?: number): Promise<{ startTime: number, endTime: number }[]>
-
-  /**
-   * Get sessions when data was recorded.
-   *
-   * @param startTime only retrieve sessions past this time (optional)
-   * @param duration only retrieve as many sessions as necessary to fill the duration (optional)
-   *
-   * @returns all sessions when data was recorded, ordered by ascending start time
-   */
-  getSessionWindow(startTime?: number, duration?: number): Promise<{ startTime: number, endTime: number }[]>
+  getSessions(options?: SessionOptions): Promise<{ startTime: number, endTime: number }[]>
 
   /** Pause data retrieval. */
   pause(): Promise<void>
