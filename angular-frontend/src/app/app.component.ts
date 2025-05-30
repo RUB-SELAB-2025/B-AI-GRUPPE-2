@@ -1,16 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { MouseTrackerComponent } from './shared/mouse-tracker/mouse-tracker.component';
+import { InfoBoxComponent } from './info-box/info-box.component';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,MouseTrackerComponent],
+  imports: [RouterOutlet,InfoBoxComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true
 })
 export class AppComponent {
   title = 'OmnAIView';
+
+  //Get Child Component
+  @ViewChild(InfoBoxComponent)
+  infoBoxComponent!: InfoBoxComponent;
+
 
   anwenden() {
       const abtast = document.getElementById('abtast') as HTMLInputElement | null;
@@ -22,10 +28,10 @@ export class AppComponent {
       console.log("Projekt Info:", projInfo);
 
       if(mousePos && mousePos.checked){
-        const mouseTracker = document.getElementById("mouseTracker");
-        if (mouseTracker) {
-          mouseTracker.style.display = 'block';
-        }
+        this.infoBoxComponent.MouseTrackerActive = true
+      }
+      else{
+        this.infoBoxComponent.MouseTrackerActive = false
       }
 
 
