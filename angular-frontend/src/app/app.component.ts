@@ -12,6 +12,7 @@ import { InfoBoxComponent } from './info-box/info-box.component';
 })
 export class AppComponent {
   title = 'OmnAIView';
+  ModifyWindow = false
 
   //Get Child Component
   @ViewChild(InfoBoxComponent)
@@ -23,9 +24,6 @@ export class AppComponent {
       const projInfo = document.getElementById('proj-info') as HTMLInputElement | null;
       const mousePos = document.getElementById('mousePos') as HTMLInputElement | null;
       const infoBox = document.getElementById('info') as HTMLInputElement | null;
-
-      console.log("Abtastrate:", abtast);
-      console.log("Projekt Info:", projInfo);
 
       if(mousePos && mousePos.checked){
         this.infoBoxComponent.MouseTrackerActive = true

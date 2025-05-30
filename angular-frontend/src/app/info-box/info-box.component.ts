@@ -1,9 +1,8 @@
 import { Component, HostListener} from '@angular/core';
-import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-info-box',
-  imports: [NgIf],
+  imports: [],
   templateUrl: './info-box.component.html',
   styleUrl: './info-box.component.css'
 })
