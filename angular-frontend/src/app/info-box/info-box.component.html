@@ -1,4 +1,5 @@
 <div class="info-Box">
       <h4>Informationen zu den Daten</h4>
-      <p id="mouseTracker" *ngIf="MouseTrackerActive">X: {{ mouseX }}px, Y: {{ mouseY }}px</p>
+       @if (MouseTrackerActive) {
+      <p>X: {{ mouseX }}px, Y: {{ mouseY }}px</p>}
 </div>
