@@ -1,23 +1,33 @@
 /* You can add global styles to this file, and also import other style files */
 /* optional body: padding-top: 30px; */
-html, body {height: 80%; width: 100%;}
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 80%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 
 /* Set table color + padding */
-th, td {
-border: 1px solid rgb(160 160 160);
-padding: 8px 10px;
+th,
+td {
+  border: 1px solid rgb(160 160 160);
+  padding: 8px 10px;
 }
 
 th[scope="col"] {
-background-color: #505050;
-color: #fff;
+  background-color: #505050;
+  color: #fff;
 }
 
 th[scope="row"] {
-background-color: #7f817f;
+  background-color: #7f817f;
 }
+
 /*
 tr:nth-of-type(odd) td {
 background-color: #eee;
@@ -25,39 +35,37 @@ background-color: #eee;
 */
 
 .button {
-border: 0;
-line-height: 5.5;
-padding: 0 20px;
-font-size: 1rem;
-text-align: center;
-color: #fff;
-text-shadow: 1px 1px 1px #000;
-border-radius: 25px;
-background-color: rgba(235,62,54,255);
-background-image: linear-gradient(
-  to top left,
-  rgba(0, 0, 0, 0.2),
-  rgba(0, 0, 0, 0.2) 30%,
-  rgba(0, 0, 0, 0)
-);
-box-shadow:
-  inset 2px 2px 3px rgba(255, 255, 255, 0.6),
-  inset -2px -2px 3px rgba(0, 0, 0, 0.6);
+  border: 0;
+  line-height: 5.5;
+  padding: 0 20px;
+  font-size: 1rem;
+  text-align: center;
+  color: #fff;
+  text-shadow: 1px 1px 1px #000;
+  border-radius: 25px;
+  background-color: rgba(235, 62, 54, 255);
+  background-image: linear-gradient(to top left,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0.2) 30%,
+      rgba(0, 0, 0, 0));
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.6),
+    inset -2px -2px 3px rgba(0, 0, 0, 0.6);
 }
 
-.big-btn{
-width: 15%;
-height: 100%;
+.big-btn {
+  width: 15%;
+  height: 100%;
 }
 
 .button:hover {
-background-color: rgba(235,82,74,255);
+  background-color: rgba(235, 82, 74, 255);
 }
 
 .button:active {
-box-shadow:
-  inset -2px -2px 3px rgba(255, 255, 255, 0.6),
-  inset 2px 2px 3px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset -2px -2px 3px rgba(255, 255, 255, 0.6),
+    inset 2px 2px 3px rgba(0, 0, 0, 0.6);
 }
 
 
@@ -71,7 +79,7 @@ box-shadow:
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .analyse-content {
@@ -92,7 +100,7 @@ box-shadow:
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .info-content {
@@ -105,11 +113,21 @@ box-shadow:
   border-radius: 30px;
 }
 
-label.checkbox-text{
+label.checkbox-text {
   margin-left: 2em;
   display: block;
   position: relative;
   margin-top: -1.4em;
   line-height: 1.4em;
-  
+
+}
+
+app-line-graph {
+  display: block;
+  position: relative;
+  overflow: hidden;
+
+  &:hover .channel-select-buttons {
+    transform: translate(-125%, -50%);
+  }
 }

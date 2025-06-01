@@ -1,0 +1,25 @@
+.channel-select-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #333;
+  padding: 12px 10px;
+  border-radius: 16px;
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translate(-0%, -50%);
+  transition: 0.1s;
+
+  &>div {
+    &.off {
+      opacity: 0.5;
+    }
+
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+}
