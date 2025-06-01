@@ -1,8 +1,9 @@
-import { Component, ElementRef, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, ElementRef, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
 import * as d3 from 'd3';
 import { ResizeObserverDirective } from '../../../shared/resize-observer.directive';
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
+import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
 
 /** How many datapoints the graph data should be reduced to */
 const DISPLAY_PRECISION = 200
@@ -34,6 +35,7 @@ type Data = ChannelData[]
  */
 class ChannelView {
   public readonly $color
+  public readonly $hidden: WritableSignal<boolean> = signal(false)
 
   public readonly targetScale: { min: number, max: number } = { min: 0, max: 0 }
   public readonly viewedScale: { min: number, max: number } = { min: 0, max: 0 }
@@ -69,9 +71,14 @@ class ChannelView {
   }
 }
 
+export type ChannelViewData = {
+  $color: Signal<string>
+  $hidden: WritableSignal<boolean>
+}
+
 @Component({
   selector: 'app-line-graph',
-  imports: [ResizeObserverDirective],
+  imports: [ResizeObserverDirective, ChannelSelectComponent],
   standalone: true,
   providers: [DummyDataService],
   templateUrl: './line-graph.component.html',
@@ -85,7 +92,12 @@ export class LineGraphComponent {
   private readonly $svgWidth = signal(300)
   private readonly $svgHeight = signal(150)
 
-  private readonly channels: { [id: string]: ChannelView } = {}
+  private readonly $writechannels: WritableSignal<Map<string, ChannelView>> = signal(new Map())
+
+  public readonly $channels: Signal<ChannelViewData[]> = computed(() => {
+    const channels = this.$writechannels()
+    return [...channels.values()]
+  })
 
   /**
    * The viewed time; effectively the x axis.
@@ -138,8 +150,9 @@ export class LineGraphComponent {
       }
       const padding = (max - min) / VIEW_SCALE_PADDING
 
-      this.channels[channelData.channel.id].targetScale.min = min - padding
-      this.channels[channelData.channel.id].targetScale.max = max + padding
+      const channels = this.$writechannels()
+      channels.get(channelData.channel.id)!.targetScale.min = min - padding
+      channels.get(channelData.channel.id)!.targetScale.max = max + padding
     }
   }
 
@@ -149,7 +162,7 @@ export class LineGraphComponent {
    * @param delta the time passed since the last update
    */
   private updateViewedScales(delta: number) {
-    for (const channel of Object.values(this.channels)) {
+    for (const channel of this.$writechannels().values()) {
       channel.updateViewScale(delta)
     }
   }
@@ -210,7 +223,7 @@ export class LineGraphComponent {
     color: string,
     path: string,
   } | null {
-    const color = this.channels[channelData.channel.id].$color()
+    const color = this.$writechannels().get(channelData.channel.id)!.$color()
 
     const dots: [number, number][] = []
     for (const stream of channelData.streams) {
@@ -251,7 +264,12 @@ export class LineGraphComponent {
     const drawn: { color: string, path: string }[] = []
 
     for (const channelData of data) {
-      const { max, min } = this.channels[channelData.channel.id].viewedScale
+      const channel = this.$writechannels().get(channelData.channel.id)!
+
+      if (channel.$hidden())
+        continue
+
+      const { max, min } = channel.viewedScale
 
       const path = this.drawLine(start, end, width, height, min, max, channelData, precision)
 
@@ -306,8 +324,17 @@ export class LineGraphComponent {
    */
   private addNewChannels(data: Data) {
     for (const channelData of data) {
-      if (!(channelData.channel.id in this.channels)) {
-        this.channels[channelData.channel.id] = new ChannelView(channelData.channel.color)
+      if (!(this.$writechannels().has(channelData.channel.id))) {
+        this.$writechannels.update(channels => {
+          // map needs to be recreated to trigger effects correctly
+          // is a better workaround possible?
+          const map = new Map()
+          for(const pair of channels) {
+            map.set(pair[0], pair[1])
+          }
+          map.set(channelData.channel.id, new ChannelView(channelData.channel.color))
+          return map
+        })
       }
     }
   }
