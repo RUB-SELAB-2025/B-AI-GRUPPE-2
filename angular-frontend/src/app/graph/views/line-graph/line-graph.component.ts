@@ -156,8 +156,19 @@ export class LineGraphComponent {
     }
     const csvString = cvsRows.join('\r\n');
 
+    // Download File
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
 
+    const a = document.createElement(a);
+    a.href = url;
+    a.download = 'data.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
+
   public readonly $channels: Signal<ChannelViewData[]> = computed(() => {
     const channels = this.$writechannels()
     return [...channels.values()]
