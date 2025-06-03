@@ -108,8 +108,41 @@ export class LineGraphComponent {
     const data = this.processData(rawData);
 
     // TODO: Build CSV Header
+    const channelIds = data.map(cd => cd.channel.id);
+    const channelNames = data.map(cd => cd.channel.name ?? cd.channel.id);
 
+    const allTimestamps = new Set<number>();
+    for (const channelData of data) {
+      for (const stream of channelData.streams) {
+        for (let i = 0; i < stream.values.length; i++) {
+          const sampleDelay = 1000 / channelData.channel.sampleRate();
+          const timestamp = stream.start + i * sampleDelay;
+          if (timestamp >= start && timestamp <= end) {
+            allTimestamps.add(timestamp);
+          }
+        }
+      }
+    }
 
+    const timestamps = Array.from(allTimestamps).sort((a,b) => a - b);
+    const valueMatrix: { [timestamp: number]: { [channelId: string]: number | ''}} = {};
+    for (const t of timestamps) {
+      valueMatrix[t] = {};
+      for (const channelData of data) {
+        valueMatrix[t][channelData.channel.id] = '';
+      }
+    }
+    for (const channelData of data) {
+      for (const stream of channelData.streams) {
+        const sampleDelay = 1000 / channelData.channel.sampleRate();
+        for (let i = 0; i < stream.values.length; i++) {
+          const timestamp = stream.start + i * sampleDelay;
+          if (timestamp >= start && timestamp <= end) {
+            valueMatrix[timestamp][channelData.channel.id] = stream.values[i];
+          }
+        }
+      }
+    }
 
     // TODO: Build CSV
 
