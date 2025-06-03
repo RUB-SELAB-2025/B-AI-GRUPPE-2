@@ -94,6 +94,26 @@ export class LineGraphComponent {
 
   private readonly $writechannels: WritableSignal<Map<string, ChannelView>> = signal(new Map())
 
+  public async save_data(): Promise<void> {
+    // TODO: get current time range
+    const {start, end} = this.getViewTime();
+
+    // TODO: Get the raw data
+    const rawData = await this.dataSource.getData({
+      endTime: end,
+      duration: this.viewedTime.amount,
+      precision: DISPLAY_PRECISION // TODO: Needs to be changed to sample rate
+    });
+
+    const data = this.processData(rawData);
+
+    // TODO: Build CSV Header
+
+
+
+    // TODO: Build CSV
+
+  }
   public readonly $channels: Signal<ChannelViewData[]> = computed(() => {
     const channels = this.$writechannels()
     return [...channels.values()]
@@ -393,3 +413,7 @@ export class LineGraphComponent {
     this.drawAxis(start, end, width)
   }
 }
+
+
+
+
