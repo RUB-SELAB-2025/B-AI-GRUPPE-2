@@ -145,6 +145,17 @@ export class LineGraphComponent {
     }
 
     // TODO: Build CSV
+    const header = ['timestamp', ...channelNames];
+    const csvRows = [header.join(',')];
+    for (const t of timestamps) {
+      const row = [new Date(t).toISOString()];
+      for (const channelId of channelIds) {
+        row.push(valueMatrix[t][channelId]);
+      }
+      csvRows.push(row.join(','));
+    }
+    const csvString = cvsRows.join('\r\n');
+
 
   }
   public readonly $channels: Signal<ChannelViewData[]> = computed(() => {
