@@ -65,37 +65,40 @@ box-shadow:
 /* Neues Popup-Layout */
 .popup-container {
   /*display: none;*/
-  /*padding-bottom: 20%;*/
+  /* padding-bottom: 20%; */
   width: 350px;      /* Feste Breite */
-  height: 20px;      /* Höhe passt sich an Inhalt an */
+  /* height: 50px; */     /* Höhe passt sich an Inhalt an */
   max-width: 280px;    /* 20% Begrenzung bei kleinen Bildschirmen */
-  min-height: 350px; /* 300 für begranzung an x achse*/
+  min-height: 260px; /* 350 für begranzung an x achse*/
   max-height: 51%;
+  min-width: 200px;
   position: fixed;
-  top: 100px;      /* 80px 10% Abstand von oben */
+  /*top: 190px; */      /* 190px 10% Abstand von oben */
   left: 20%;     /* Abstand von links */
   /*right: 0;        /* rechts ausrichten */
-  /*bottom: 10px;       /* unten ausrichten */
-  z-index: 2;
+  bottom: 45%;    /* unten ausrichten */
+  /* z-index: 1; */
   background-color: rgba(255,255,255,0.95);
-  padding: 30px 40px  0px;
+  padding: 30px 40px  0px; /* padding in height etc machen */
   border-radius: 20px; /*20 */
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.687);
   width: 10%;
+  background-color: rgba(0,0,0,0.5);
 }
 
 .analyse-popup {
   display: grid;
   grid-template-columns: max-content max-content; /* hier anorndung */
-  gap: 40px 0px;
+  gap: 20px 0px;
   /*justify-items: start;*/
   justify-content: center;
+  
 }
 
 
 .popup-btn {
   margin: 5px;
-  padding: 10px 10px; /* 91 */
+  padding: 10px 5px; /* 91 */
   /*width: 40%; */
   font-size: 1rem;
   border: none;
@@ -112,24 +115,25 @@ box-shadow:
 #analyse {
   display: none;
   position: fixed;
-  z-index: 1;
+  /*z-index: 1; */
   left: 0;
-  top: 0;
+  /*top: 0; */
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  /* background-color: rgba(0,0,0,0.5); */
 }
 
 #logger-popup {
-  /*display: none;
-  position: fixed;
-  z-index: 1;*/
-  left: 20%;
-  top: auto;
-  bottom: 120%;
+  /* display: none; */
+  /*position: fixed; */
+  
+  /*z-index: 1; */
+  /*left: 60%; */
+  /*top: auto;*/
+  /* bottom: auto; /*120% /*
   /* width: 100%;
   height: 100%; */
-  background-color: rgba(0,0,0,0.5);
+  /* background-color: rgba(0,0,0,0.5); */
 
   /*bottom: 120px;
   top: auto;

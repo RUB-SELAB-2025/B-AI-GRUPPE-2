@@ -30,8 +30,8 @@
 <!-- Let's add some buttons -->
   <div style="text-align: left; margin-top: 1rem;">
 
-    <button class = "button big-btn" title= "Daten analysieren" onclick="document.getElementById('analyse').style.display='block'">Analyse</button>
-    <div id="analyse" class="popup-container"> <!--  style="top: 5%-->
+    <button class = "button big-btn" title= "Daten analysieren" onclick="togglePopup('analyse-popup')">Analyse</button>  <!--  style="top: auto; bottom: 370px; left: 46%;"-->
+    <div id="analyse-popup" class="popup-container" style="left: 1px;"> <!--  style="top: 5%;"-->
       <div class="analyse-popup">
     
         <button class="popup-btn">Standard</button>
@@ -43,7 +43,7 @@
       
     
         <div style="margin-top: 1rem;">
-          <button onclick="togglePopup('analyse')">Schließen</button>
+          <button onclick="togglePopup('analyse-popup')">Schließen</button>
         </div>
       </div>
     </div> <!-- bis hier -->
@@ -53,7 +53,7 @@
     <!--  <button class="button big-btn">Logger</button>  -->
     <!-- test -->
     <button class="button big-btn" onclick="togglePopup('logger-popup')">Logger</button>
-    <div id="logger-popup" class="popup-container" style="bottom: 45%; left: 46%;">  <!--  style="top: auto; bottom: 370px; left: 46%;"-->
+    <div id="logger-popup" class="popup-container" style="left: 46%;">  <!--  style="top: auto; bottom: 370px; left: 46%;"-->
       <div class="analyse-popup">
         <button class="popup-btn">Logger Starten</button>
         <button class="popup-btn">Logger Stoppen</button>
