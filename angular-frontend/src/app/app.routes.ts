@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { GraphComponent } from './graph/graph.component';
 import { RenderMode } from '@angular/ssr';
+import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
 
 export const routes: Routes = [
   {
@@ -8,8 +8,8 @@ export const routes: Routes = [
     children: [
       {
         path: 'main',
-        component: GraphComponent,
-        
+        component: LineGraphComponent,
+
       }
     ],
   },
