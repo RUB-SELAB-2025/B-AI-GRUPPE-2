@@ -56,7 +56,7 @@ class DummyDataStream implements DataStream {
           for (const channel of channels) {
             data.push({
               channelID: channel.id,
-              value: Math.sin(channel.offset + (SIN_CONST * channel.frequency * time) * channel.amplification)
+              value: channel.offset + Math.sin((SIN_CONST * channel.frequency * time) * channel.amplification)
             })
           }
           yield { time, data };
