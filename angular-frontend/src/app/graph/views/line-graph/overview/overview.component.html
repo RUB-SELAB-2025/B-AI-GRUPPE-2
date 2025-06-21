@@ -1,11 +1,8 @@
-<div>
+<div id="cnt">
   <svg #svg appResizeObserver (resize)="updateDimensions($event)">
-    <g #xAxis></g>
-
     @for (entry of $drawn(); track $index) {
     <path [attr.d]="entry.path" fill="none" [attr.stroke]="entry.color" stroke-width="2" />
     }
   </svg>
-  <app-channel-select [channels]="this.$channels"></app-channel-select>
+  <div id="win" [style.width.px]="$window().width" [style.right.px]="$window().right"></div>
 </div>
-<app-overview [lastViewedTime]="this.$lastViewedTime"></app-overview>

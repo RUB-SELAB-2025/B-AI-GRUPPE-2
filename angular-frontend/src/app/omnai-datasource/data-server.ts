@@ -23,7 +23,7 @@ export type ChannelData = {
   values: number[]
 }
 
-export type SessionOptions = { startTime: number, endTime: number } | { startTime: number, duration: number } | { endTime: number, duration: number }
+export type SessionOptions = { startTime?: number, endTime?: number } | { startTime: number, duration: number } | { endTime: number, duration: number }
 export type DataOptions = SessionOptions & { precision?: number }
 
 export interface DataServer {
