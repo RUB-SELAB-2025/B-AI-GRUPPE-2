@@ -96,6 +96,9 @@ export class LineGraphComponent {
   public readonly $svgWidth = signal(300)      //How many pixels
   private readonly $svgHeight = signal(150)
 
+  //public readonly lastViewedData:WritableSignal<SessionData[]> = signal([]);
+  //public readonly lastViewedTime = signal({start:0,end:0});
+
   private readonly $writechannels: WritableSignal<Map<string, ChannelView>> = signal(new Map())
 
   public readonly $channels: Signal<ChannelViewData[]> = computed(() => {
@@ -384,8 +387,10 @@ export class LineGraphComponent {
     const height = this.$svgHeight()
 
     const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION })
-
+    //this.lastViewedData.set(rawData);                //< ---- 100% Data ----->
+    //this.lastViewedTime.set({start , end})           //<start--- 60% ----end->
     this.graphState.lastViewedTime.set({ start, end });
+    this.graphState.rawData.set(rawData);
 
     const data = this.processData(rawData)
 

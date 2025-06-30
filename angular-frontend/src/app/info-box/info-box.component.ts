@@ -23,8 +23,13 @@ export class InfoBoxComponent {
   readonly lastViewedTime_diff = computed(() =>
     this.lastViewedTime().end - this.lastViewedTime().start
   );
+  readonly lastViewedData = computed(() => this.graphState.rawData());
 
   //readonly lastViewedData = computed(() => this.LineGraphComponent.lastViewedData()[0].data[0].values); //erste session, erster channel
+
+  //calculate y-Value
+  readonly positionToRead_Channel0 = computed(() => Math.floor((this.graphState.rawData()[0].data[0].values.length)*this.relativeMouseX()));
+  readonly yVal_Channel0 = computed(() => this.lastViewedData()[0].data[0].values[this.positionToRead_Channel0()]);
 
   //Mouse tracking signals
   readonly mouseX = signal(0);
@@ -44,6 +49,6 @@ export class InfoBoxComponent {
   handleMouseMove(event: MouseEvent) {
     this.mouseX.set(event.clientX);
     this.mouseY.set(event.clientY);
-    //console.log(this.lastViewedData());
+    //console.log(this.lastViewedData()[0].data[0].values);
   }
 }
