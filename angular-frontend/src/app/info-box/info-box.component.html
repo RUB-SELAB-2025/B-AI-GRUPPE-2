@@ -1,5 +1,8 @@
 <div class="info-Box">
       <h4>Informationen zu den Daten</h4>
        @if (MouseTrackerActive) {
-      <p>X: {{ mouseX }}px, Y: {{ mouseY }}px</p>}
+      <p>X: {{ mouseX() }}px, Y: {{ mouseY() }}px</p>}
+      <!--<p>Last Viewed data {{lastViewedData()}}</p>-->
+      <p>Last Viewed time end {{lastViewedTime_end()-lastViewedTime_diff() * relativeMouseX()}}</p>
+      <p>Relative MouseX {{relativeMouseX()}} (screen width scaled to the time)</p>
 </div>

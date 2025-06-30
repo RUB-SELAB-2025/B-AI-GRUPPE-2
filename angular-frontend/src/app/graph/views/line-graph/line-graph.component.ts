@@ -4,6 +4,8 @@ import { ResizeObserverDirective } from '../../../shared/resize-observer.directi
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
+import { GraphStateService } from '../../../graph-state.service';  
+
 
 /** How many datapoints the graph data should be reduced to */
 const DISPLAY_PRECISION = 200
@@ -84,12 +86,14 @@ export type ChannelViewData = {
   templateUrl: './line-graph.component.html',
   styleUrl: './line-graph.component.css'
 })
+
+
 export class LineGraphComponent {
   readonly xAxis = viewChild.required<ElementRef<SVGGElement>>('xAxis');
 
   private readonly dataSource: DataServer = inject(DummyDataService);
 
-  private readonly $svgWidth = signal(300)
+  public readonly $svgWidth = signal(300)      //How many pixels
   private readonly $svgHeight = signal(150)
 
   private readonly $writechannels: WritableSignal<Map<string, ChannelView>> = signal(new Map())
@@ -105,8 +109,10 @@ export class LineGraphComponent {
    * If end is set to null, the view is live.
    */
   private viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
+  private graphState: GraphStateService;
 
-  constructor() {
+  constructor(graphState: GraphStateService) {
+    this.graphState = graphState;
     const drawLoop = async () => {
       await this.draw()
       requestAnimationFrame(drawLoop)
@@ -379,6 +385,8 @@ export class LineGraphComponent {
 
     const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION })
 
+    this.graphState.lastViewedTime.set({ start, end });
+
     const data = this.processData(rawData)
 
     if (this.isDataEmpty(data))
@@ -392,4 +400,5 @@ export class LineGraphComponent {
     this.drawLines(start, end, width, height, data, DISPLAY_PRECISION)
     this.drawAxis(start, end, width)
   }
+
 }

@@ -35,7 +35,7 @@ export interface DataServer {
   readonly paused: Signal<boolean>
 
   /** Get all data within a specified time frame. */
-  getData(options?: DataOptions): Promise<SessionData[]>
+  getData(options?: DataOptions): Promise<SessionData[]>    //getData({duration:10, endTime:32000})
 
   /** Get all sessions of data retrieval within a specified time frame. */
   getSessions(options?: SessionOptions): Promise<{ startTime: number, endTime: number }[]>
