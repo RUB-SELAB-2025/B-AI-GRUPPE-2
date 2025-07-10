@@ -21,7 +21,7 @@ export class MouseInteractionComponent {
 
   private height: number;
   private channels :number[] = [];
-  public bars: {id: number, timestamp: number}[] = [];
+  public bars: {id: number, timestamp: number, color : string}[] = [];
 
   constructor() {
     this.height = 0;
@@ -72,7 +72,7 @@ export class MouseInteractionComponent {
     preset.setAttribute("stroke", this.bars.length == 0 ? "green" : "red");
     preset.setAttribute("id", `bar${this.bars.length}`)
 
-    this.bars.push({"id": this.bars.length, "timestamp": t});
+    this.bars.push({"id": this.bars.length, "timestamp": t, color: this.bars.length == 0 ? "green" : "red"});
 
     const container = this.line_containerRef().nativeElement;
 
@@ -110,6 +110,8 @@ export class MouseInteractionComponent {
         line?.setAttribute("stroke", "none");
         continue;
       }
+
+      line?.setAttribute("stroke", bar.color)
 
       const offset = width_svg / amount_points;
 

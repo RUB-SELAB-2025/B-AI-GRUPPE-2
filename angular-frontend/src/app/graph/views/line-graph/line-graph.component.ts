@@ -5,15 +5,8 @@ import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
 import { GraphStateService } from '../../../graph-state.service';
-<<<<<<< HEAD
 import { MouseInteractionComponent } from '../../mouse-interaction/mouse-interaction.component';
-import { raw } from 'express';
-import { channel } from 'node:diagnostics_channel';
 import { OverviewComponent } from './overview/overview.component';
-=======
-
-import { OverviewComponent } from "./overview/overview.component";
->>>>>>> origin
 
 /** How many datapoints the graph data should be reduced to */
 const DISPLAY_PRECISION = 3840
@@ -269,11 +262,11 @@ export class LineGraphComponent {
     const btn = document.getElementById("btn_pause") as HTMLElement;
     if (this.viewedTime.end == null) {
       const { start, end } = this.getViewTime();
-      this.setViewTime(this.viewedTime.amount, this.viewedTime.end);
+      this.setViewTime({end : start + this.viewedTime.amount});
       btn.innerHTML = "Weiter";
     } else {
       btn.innerHTML = "Pause";
-      this.setViewTime(this.viewedTime.end - this.viewedTime.amount, null);
+      this.setViewTime({end : null});
     }
   }
 
