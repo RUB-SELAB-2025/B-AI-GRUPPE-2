@@ -4,6 +4,7 @@ import { GraphStateService } from '../graph-state.service';  // adjust the path
 
 
 @Component({
+  standalone: true,
   selector: 'app-info-box',
   imports: [],
   providers: [LineGraphComponent],
@@ -43,6 +44,8 @@ export class InfoBoxComponent {
 
   //Which Elements to display
   MouseTrackerActive = false
+
+  displayedChannel = 0
   
 
   @HostListener('document:mousemove', ['$event'])
