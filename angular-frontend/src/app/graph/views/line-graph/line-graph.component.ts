@@ -42,7 +42,6 @@ class ChannelView {
     this.$hue.set(hue)
   }
 
-
   /**
    * Smoothly move the viewed scale closer to the target scale.
    *
@@ -87,6 +86,7 @@ export class LineGraphComponent {
   private readonly $svgHeight = signal(150)
 
   private readonly channels: { [id: number]: ChannelView } = {}
+
   private boundHandleKey = this.handleKey.bind(this);
 
   public handleKey(event: KeyboardEvent) {
@@ -102,9 +102,17 @@ export class LineGraphComponent {
       case '0':
         this.onResetZoom();
         break;
+      case 'ArrowLeft':
+        this.scrollLeft();
+        break;
+      case 'ArrowRight':
+        this.scrollRight();
+        break;
+      case 'ArrowUp':
+        this.scrollReset();
+        break;
     }
   }
-  
   /**
    * The viewed time; effectively the x axis.
    *
@@ -119,9 +127,6 @@ export class LineGraphComponent {
     }
     drawLoop()
   }
-
-  
-
 
   /**
    * Gets a hue that is as far away from preexisting hues as possible.
@@ -386,6 +391,7 @@ export class LineGraphComponent {
 
     this.drawAxis(start, end, width)
   }
+
   onZoomIn() {
     this.viewedTime.amount *= 0.8;
   }
@@ -397,5 +403,29 @@ export class LineGraphComponent {
   onResetZoom() {
     this.viewedTime.amount = 5000;
     this.viewedTime.end = null;
+  }
+
+  private scrollStep = 1000; // Scroll um 1 Sekunde
+
+  scrollLeft() {
+    console.log("a pressed");
+    if (this.viewedTime.end === null) {
+      this.viewedTime.end = this.getViewTime().end;
+    }
+    this.viewedTime.end -= this.scrollStep;
+    this.draw();
+  }
+
+  scrollRight() {
+    if (this.viewedTime.end === null) {
+      this.viewedTime.end = this.getViewTime().end;
+    }
+    this.viewedTime.end += this.scrollStep;
+    this.drawImmediately();
+  }
+
+  scrollReset() {
+    this.viewedTime.end = null;
+    this.drawImmediately();
   }
 }
