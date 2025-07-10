@@ -4,6 +4,7 @@ import { MouseTrackerComponent } from './shared/mouse-tracker/mouse-tracker.comp
 import { InfoBoxComponent } from './info-box/info-box.component';
 import { RenderMode } from '@angular/ssr';
 
+
 export const routes: Routes = [
   {
     path: 'graph',
