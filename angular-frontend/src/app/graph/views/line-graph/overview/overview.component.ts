@@ -1,6 +1,6 @@
-import { Component, inject, Input, Signal, signal, WritableSignal } from '@angular/core';
+import { Component, ElementRef, inject, Input, Signal, signal, ViewChild, WritableSignal } from '@angular/core';
 import { ResizeObserverDirective } from '../../../../shared/resize-observer.directive';
-import { DataServer } from '../../../../omnai-datasource/data-server';
+import { DataServer, SessionData } from '../../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import * as d3 from 'd3';
 import { ChannelViewData } from '../line-graph.component';
@@ -17,6 +17,8 @@ const PRECISION = 3840
 })
 export class OverviewComponent {
   @Input() lastViewedTime!: Signal<{ amount: number, end: null | number } | null>
+
+  @Input() setViewTime!: (viewTime: { amount?: number, end?: number | null }) => void;
 
   public readonly $window = signal({
     width: 0,
@@ -54,8 +56,12 @@ export class OverviewComponent {
     path: string,
   }[]> = signal([])
 
+  private sessions: { start: number, end: number }[] = []
+
   private async draw() {
     const data = await this.dataSource.getData({ precision: PRECISION })
+
+    this.sessions = dataToSessions(data)
 
     const realPrecision = data.map(sess => Math.max(...sess.data.map(chan => chan.values.length))).reduce((acc, val) => acc + val, 0)
 
@@ -103,6 +109,8 @@ export class OverviewComponent {
 
     this.$drawn.set(drawn)
 
+    this.moveView()
+
     // TODO: fix - current implementation does not adjust for sessions
     const MIN_WIDTH = 10
     const lvt = this.lastViewedTime()
@@ -117,4 +125,85 @@ export class OverviewComponent {
       })
     }
   }
+
+  @ViewChild('cnt', { static: true })
+  private cnt!: ElementRef<HTMLElement>;
+
+  private pointerPosition: number | null = null;
+
+  onPointerDown(event: PointerEvent) {
+    const target = event.target as HTMLElement;
+    target.setPointerCapture(event.pointerId);
+
+    this.pointerPosition = event.clientX;
+    this.moveView()
+  }
+
+  onPointerMove(event: PointerEvent) {
+    if (!this.pointerPosition)
+      return
+
+    const bcr = this.cnt.nativeElement.getBoundingClientRect()
+    const horizontalPosition = Math.max(0, Math.min(this.$svgWidth(), event.clientX - bcr.left));
+
+    this.pointerPosition = horizontalPosition
+    this.moveView()
+  }
+
+  onPointerUp() {
+    this.pointerPosition = null;
+  }
+
+  onPointerCancel() {
+    this.onPointerUp();
+  }
+
+  private moveView() {
+    if (this.pointerPosition === null)
+      return
+
+    if (this.sessions.length === 0)
+      return
+
+    const viewTime = this.lastViewedTime()
+    if (viewTime === null)
+      return
+
+    const fullDuration = this.sessions.reduce((acc, session) => acc + (session.end - session.start), 0)
+    if (viewTime.amount >= fullDuration)
+      return
+
+    const relativePosition = this.pointerPosition / this.$svgWidth();
+
+    const durationToPass = Math.max(viewTime.amount, fullDuration * relativePosition + viewTime.amount / 2)
+
+    const sessionEnd = this.sessions[this.sessions.length - 1].end;
+
+    let passed = 0;
+    for (const session of this.sessions) {
+      const duration = session.end - session.start;
+      if (duration + passed >= durationToPass) {
+        const time = session.start + (durationToPass - passed)
+        if (time >= sessionEnd)
+          this.setViewTime({ end: null })
+        else
+          this.setViewTime({ end: time })
+        return
+      }
+      passed += duration
+    }
+
+    this.setViewTime({ end: null })
+  }
+}
+
+function dataToSessions(data: SessionData[]): { start: number, end: number }[] {
+  const sessions = []
+  for (const session of data) {
+    sessions.push({
+      start: session.startTime,
+      end: session.endTime
+    })
+  }
+  return sessions
 }

@@ -1,4 +1,4 @@
-<div id="cnt">
+<div #cnt (pointerdown)="onPointerDown($event)" (document:pointermove)="onPointerMove($event)" (pointerup)="onPointerUp()" (pointercancel)="onPointerCancel()" id="cnt">
   <svg #svg appResizeObserver (resize)="updateDimensions($event)">
     @for (entry of $drawn(); track $index) {
     <path [attr.d]="entry.path" fill="none" [attr.stroke]="entry.color" stroke-width="2" />

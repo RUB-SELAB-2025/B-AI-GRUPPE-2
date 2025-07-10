@@ -115,7 +115,7 @@ export class LineGraphComponent {
    *
    * If end is set to null, the view is live.
    */
-  private viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
+  private readonly viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
   private graphState: GraphStateService;
 
   constructor(graphState: GraphStateService) {
@@ -135,6 +135,13 @@ export class LineGraphComponent {
   public updateDimensions(dimensions: { width: number, height: number }) {
     this.$svgWidth.set(dimensions.width)
     this.$svgHeight.set(dimensions.height)
+  }
+
+  public readonly setViewTime = (viewTime: { amount?: number, end?: number | null }) => {
+    if (viewTime.amount !== undefined)
+      this.viewedTime.amount = viewTime.amount
+    if (viewTime.end !== undefined)
+      this.viewedTime.end = viewTime.end
   }
 
   /**
