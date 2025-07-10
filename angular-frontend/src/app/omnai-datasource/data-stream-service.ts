@@ -43,8 +43,8 @@ type WritableChanData = {
 
 export class DataStreamService implements DataServer {
   readonly #channels: WritableSignal<WritableChannel[]> = signal([])
-  public readonly channels: Signal<Channel[]> = computed(() => [...this.#channels()])
-  public readonly aliveChannels: Signal<Channel[]> = computed(() => this.#channels().filter(channel => channel.alive))
+  public readonly channels: Signal<Channel[]> = this.#channels
+  public readonly aliveChannels: Signal<Channel[]> = computed(() => this.channels().filter(channel => channel.alive))
 
   public readonly paused: Signal<boolean> = computed(() => this.#dataStream.paused())
 
@@ -172,7 +172,7 @@ export class DataStreamService implements DataServer {
     const color = `hsl(${hue}, 100%, 50%)`
     this.#channels.update(channels => {
       channels.push(new WritableChannel(id, color, this.#dataStream.sampleRate))
-      return channels
+      return [...channels]
     })
   }
 
@@ -232,14 +232,14 @@ export class DataStreamService implements DataServer {
   }
 
   private reducePrecision(data: SessionData[], precision: number) {
+    const dataPoints = data.map(session => session.data[0]?.values.length ?? 0).reduce((acc, val) => acc + val, 0)
+    const valuePerValues = dataPoints / precision
+
     for (const session of data) {
       for (const channelData of session.data) {
-        const valuePerValues = channelData.channel.sampleRate() / precision
-        if (!Number.isInteger(valuePerValues))
-          throw "sample rate must be evenly divisible by precision"
         const values = []
-        for (let i = 0; i < channelData.values.length; i += valuePerValues) {
-          values.push(channelData.values[i])
+        for (let i = 0; i < channelData.values.length - 0.5; i += valuePerValues) {
+          values.push(channelData.values[Math.round(i)])
         }
         channelData.values = values
       }
@@ -320,8 +320,8 @@ export class DataStreamService implements DataServer {
     if (options === undefined)
       return await this.getSessionRange(0, Number.POSITIVE_INFINITY)
 
-    if ("startTime" in options && "endTime" in options)
-      return await this.getSessionRange(options.startTime, options.endTime)
+    if (!("duration" in options))
+      return await this.getSessionRange(options.startTime ?? 0, options.endTime ?? Number.POSITIVE_INFINITY)
 
     if (options.duration <= 0)
       return []
