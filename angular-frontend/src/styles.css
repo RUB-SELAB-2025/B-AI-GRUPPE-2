@@ -122,7 +122,7 @@ label.checkbox-text {
 
 }
 
-app-line-graph {
+app-line-graph>div {
   display: block;
   position: relative;
   overflow: hidden;

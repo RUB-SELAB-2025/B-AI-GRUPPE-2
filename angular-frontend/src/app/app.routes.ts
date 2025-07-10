@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
-import { GraphComponent } from './graph/graph.component';
+import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
+import { MouseTrackerComponent } from './shared/mouse-tracker/mouse-tracker.component';
+import { InfoBoxComponent } from './info-box/info-box.component';
 import { RenderMode } from '@angular/ssr';
+
 
 export const routes: Routes = [
   {
@@ -8,10 +11,17 @@ export const routes: Routes = [
     children: [
       {
         path: 'main',
-        component: GraphComponent,
-        
+        component: LineGraphComponent,
       }
     ],
+  },
+  {
+    path: "shared/mouse-tracker",
+    component: MouseTrackerComponent,
+  },
+  {
+    path: "info-box",
+    component: InfoBoxComponent,
   },
   {
   path: '**',

@@ -4,9 +4,12 @@ import { ResizeObserverDirective } from '../../../shared/resize-observer.directi
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
+import { GraphStateService } from '../../../graph-state.service';
+import { MouseInteractionComponent } from '../../mouse-interaction/mouse-interaction.component';
+import { OverviewComponent } from './overview/overview.component';
 
 /** How many datapoints the graph data should be reduced to */
-const DISPLAY_PRECISION = 200
+const DISPLAY_PRECISION = 3840
 /** How close should two scales have to be to be set equal */
 const ROUNDING_ERROR_FRACTION = 1000
 /** How slowly should the scale adjust */
@@ -34,7 +37,7 @@ type Data = ChannelData[]
  * Stores and processes color and scale.
  */
 class ChannelView {
-  public readonly $color
+  public readonly $color: Signal<string>
   public readonly $hidden: WritableSignal<boolean> = signal(false)
 
   public readonly targetScale: { min: number, max: number } = { min: 0, max: 0 }
@@ -78,115 +81,161 @@ export type ChannelViewData = {
 
 @Component({
   selector: 'app-line-graph',
-  imports: [ResizeObserverDirective, ChannelSelectComponent],
+  imports: [ResizeObserverDirective, ChannelSelectComponent, MouseInteractionComponent, OverviewComponent],
   standalone: true,
   providers: [DummyDataService],
   templateUrl: './line-graph.component.html',
   styleUrl: './line-graph.component.css'
 })
+
+
 export class LineGraphComponent {
   readonly xAxis = viewChild.required<ElementRef<SVGGElement>>('xAxis');
 
   private readonly dataSource: DataServer = inject(DummyDataService);
 
-  private readonly $svgWidth = signal(300)
+  public readonly $svgWidth = signal(300)      //How many pixels
   private readonly $svgHeight = signal(150)
 
+  //public readonly lastViewedData:WritableSignal<SessionData[]> = signal([]);
+  //public readonly lastViewedTime = signal({start:0,end:0});
+
   private readonly $writechannels: WritableSignal<Map<string, ChannelView>> = signal(new Map())
-
-  public async save_data(): Promise<void> {
-    // TODO: get current time range
-    const {start, end} = this.getViewTime();
-
-    // TODO: Get the raw data
-    const rawData = await this.dataSource.getData({
-      endTime: end,
-      duration: this.viewedTime.amount,
-      precision: DISPLAY_PRECISION // TODO: Needs to be changed to sample rate
-    });
-
-    const data = this.processData(rawData);
-
-    // TODO: Build CSV Header
-    const channelIds = data.map(cd => cd.channel.id);
-    const channelNames = data.map(cd => cd.channel.name ?? cd.channel.id);
-
-    const allTimestamps = new Set<number>();
-    for (const channelData of data) {
-      for (const stream of channelData.streams) {
-        for (let i = 0; i < stream.values.length; i++) {
-          const sampleDelay = 1000 / channelData.channel.sampleRate();
-          const timestamp = stream.start + i * sampleDelay;
-          if (timestamp >= start && timestamp <= end) {
-            allTimestamps.add(timestamp);
-          }
-        }
-      }
-    }
-
-    const timestamps = Array.from(allTimestamps).sort((a,b) => a - b);
-    const valueMatrix: { [timestamp: number]: { [channelId: string]: number | ''}} = {};
-    for (const t of timestamps) {
-      valueMatrix[t] = {};
-      for (const channelData of data) {
-        valueMatrix[t][channelData.channel.id] = '';
-      }
-    }
-    for (const channelData of data) {
-      for (const stream of channelData.streams) {
-        const sampleDelay = 1000 / channelData.channel.sampleRate();
-        for (let i = 0; i < stream.values.length; i++) {
-          const timestamp = stream.start + i * sampleDelay;
-          if (timestamp >= start && timestamp <= end) {
-            valueMatrix[timestamp][channelData.channel.id] = stream.values[i];
-          }
-        }
-      }
-    }
-
-    // TODO: Build CSV
-    const header = ['timestamp', ...channelNames];
-    const csvRows = [header.join(',')];
-    for (const t of timestamps) {
-      const row = [new Date(t).toISOString()];
-      for (const channelId of channelIds) {
-        row.push(valueMatrix[t][channelId]);
-      }
-      csvRows.push(row.join(','));
-    }
-    const csvString = cvsRows.join('\r\n');
-
-    // Download File
-    const blob = new Blob([csvString], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement(a);
-    a.href = url;
-    a.download = 'data.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }
 
   public readonly $channels: Signal<ChannelViewData[]> = computed(() => {
     const channels = this.$writechannels()
     return [...channels.values()]
   })
 
+  private readonly mouseInteraction = viewChild.required(MouseInteractionComponent);
+
+  private lastMouseEvent : null | MouseEvent = null;
+  readonly #lastViewedTime: WritableSignal<{ amount: number, end: null | number } | null> = signal(null)
+  public readonly $lastViewedTime: Signal<{ amount: number, end: null | number } | null> = this.#lastViewedTime
+
   /**
    * The viewed time; effectively the x axis.
    *
    * If end is set to null, the view is live.
    */
-  private viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
+  private readonly viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
+  private graphState: GraphStateService;
 
-  constructor() {
+  constructor(graphState: GraphStateService) {
+    this.graphState = graphState;
     const drawLoop = async () => {
       await this.draw()
       requestAnimationFrame(drawLoop)
     }
     drawLoop()
+  }
+
+  /**
+    * Event listeners
+    */
+
+  onResize(dimensions : {width : number, height : number}) {
+    this.updateDimensions(dimensions);
+    this.mouseInteraction().getHeight(dimensions);
+  }
+
+  onMouseMove(event : MouseEvent) {
+    this.lastMouseEvent = event;
+    this.mouseInteraction().onMouseMove(event);
+  }
+
+  onMouseLeave(event: MouseEvent) {
+    this.lastMouseEvent = null;
+    this.mouseInteraction().onMouseLeave(event);
+  }
+
+  onClick(event : MouseEvent) {
+    const { start, end } = this.getViewTime();
+
+    const rel_x = event.clientX / this.$svgWidth();
+
+    const t = start + rel_x * this.viewedTime.amount;
+
+    this.mouseInteraction().onClick(t);
+  }
+
+  /**
+    * Update Bars
+  */
+  private async updateBars() {
+    const { start, end } = this.getViewTime();
+
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION })
+
+    const data = this.processData(rawData);
+
+    if (this.isDataEmpty(data)) return;
+
+    this.mouseInteraction().updateBars(start, end, this.viewedTime.amount, this.$svgWidth());
+  }
+
+  /**
+    * Update Text of Bars
+  */
+  private async updateText() {
+    const {start, end } = this.getViewTime();
+    const width = this.$svgWidth();
+    const height = this.$svgHeight();
+
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION });
+
+    const data = this.processData(rawData);
+    if (this.isDataEmpty(data)) return;
+    if (!this.lastMouseEvent) return;
+
+    for (const channelData of data) {
+      const channels = this.$writechannels();
+      const { max, min } = channels.get(channelData.channel.id)!.viewedScale;
+      const color = channels.get(channelData.channel.id)!.$color();
+      const closest = this.getClosest(start, end, width, height, min, max, channelData, this.lastMouseEvent.clientX);
+
+
+      const id : number = +channelData.channel.id;
+
+      this.mouseInteraction().setText(id, closest.y, color);
+    }
+  }
+
+  /**
+    * Returns closest point to pos
+  */
+  private getClosest( start : number, end : number, width : number, height : number, min : number, max : number, channelData : ChannelData, mouseX : number) {
+    const dots = this.getDots(start, end, width, height, min, max, channelData, DISPLAY_PRECISION);
+    let closest : {x : number, y : number} = {x : 0, y : 0};
+    let smallest = Infinity;
+
+    for (const dot of dots) {
+      const dist = Math.abs(dot[0] - mouseX);
+
+      if (dist < smallest) {
+        smallest = dist;
+        closest = {x : dot[0], y : dot[1]};
+      }
+    }
+    return closest;
+  }
+
+  /**
+* Returns array of all dots on screen
+  */
+  private getDots(start : number, end : number, width : number, height : number, min : number, max : number, channelData : ChannelData, precision? : number) {
+    const dots: [number, number][] = []
+    for (const stream of channelData.streams) {
+      for (let i = 0; i < stream.values.length; i++) {
+        const sampleDelay = (precision)
+          ? 1000 / precision
+          : this.sampleDelay(channelData.channel)
+        const x = width / (end - start) * ((stream.start + i * sampleDelay) - start)
+        const y = height - height / (max - min) * (stream.values[i] - min)
+        dots.push([x, stream.values[i]])
+}
+    }
+    return dots;
   }
 
   /**
@@ -199,10 +248,32 @@ export class LineGraphComponent {
     this.$svgHeight.set(dimensions.height)
   }
 
+  public readonly setViewTime = (viewTime: { amount?: number, end?: number | null }) => {
+    if (viewTime.amount !== undefined)
+      this.viewedTime.amount = viewTime.amount
+    if (viewTime.end !== undefined)
+      this.viewedTime.end = viewTime.end
+  }
+
+  /**
+    * Pause Graph visually
+  */
+  public setPause() {
+    const btn = document.getElementById("btn_pause") as HTMLElement;
+    if (this.viewedTime.end == null) {
+      const { start, end } = this.getViewTime();
+      this.setViewTime({end : start + this.viewedTime.amount});
+      btn.innerHTML = "Weiter";
+    } else {
+      btn.innerHTML = "Pause";
+      this.setViewTime({end : null});
+    }
+  }
+
   /**
    * Gets the currently viewed time frame.
    */
-  public getViewTime(): { start: number, end: number } {
+public getViewTime(): { start: number, end: number } {
     const end = (this.viewedTime.end === null || this.viewedTime.end === -1)
       ? Date.now()
       : this.viewedTime.end
@@ -261,6 +332,9 @@ export class LineGraphComponent {
       ? "scheduled"
       : "cooldown"
 
+    this.updateBars();
+    this.updateText();
+
     requestAnimationFrame(async delta => {
       const scheduled = (this.drawState === "scheduled")
       this.drawState = "ready"
@@ -294,17 +368,17 @@ export class LineGraphComponent {
    *
    * @returns the color and path
    */
-  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData, precision?: number): {
+  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData, timePerValue?: number): {
     color: string,
     path: string,
   } | null {
-    const color = this.$writechannels().get(channelData.channel.id)!.$color()
+    const color = channelData.channel.color()
 
     const dots: [number, number][] = []
     for (const stream of channelData.streams) {
       for (let i = 0; i < stream.values.length; i++) {
-        const sampleDelay = (precision)
-          ? 1000 / precision
+        const sampleDelay = (timePerValue)
+          ? timePerValue
           : this.sampleDelay(channelData.channel)
         const x = width / (end - start) * ((stream.start + i * sampleDelay) - start)
         const y = height - height / (max - min) * (stream.values[i] - min)
@@ -334,7 +408,7 @@ export class LineGraphComponent {
    * @param height svg height
    * @param data data to be drawn
    */
-  private drawLines(start: number, end: number, width: number, height: number, data: Data, precision?: number) {
+  private drawLines(start: number, end: number, width: number, height: number, data: Data, timePerValue?: number) {
 
     const drawn: { color: string, path: string }[] = []
 
@@ -346,7 +420,7 @@ export class LineGraphComponent {
 
       const { max, min } = channel.viewedScale
 
-      const path = this.drawLine(start, end, width, height, min, max, channelData, precision)
+      const path = this.drawLine(start, end, width, height, min, max, channelData, timePerValue)
 
       if (path) {
         drawn.push(path)
@@ -401,15 +475,10 @@ export class LineGraphComponent {
     for (const channelData of data) {
       if (!(this.$writechannels().has(channelData.channel.id))) {
         this.$writechannels.update(channels => {
-          // map needs to be recreated to trigger effects correctly
-          // is a better workaround possible?
-          const map = new Map()
-          for(const pair of channels) {
-            map.set(pair[0], pair[1])
-          }
-          map.set(channelData.channel.id, new ChannelView(channelData.channel.color))
-          return map
+          channels.set(channelData.channel.id, new ChannelView(channelData.channel.color))
+          return new Map(channels)
         })
+        this.mouseInteraction().addNewText(+channelData.channel.id);
       }
     }
   }
@@ -449,12 +518,23 @@ export class LineGraphComponent {
   private async drawImmediately(delta: number = 1) {
     const { start, end } = this.getViewTime()
 
+    this.#lastViewedTime.set({ amount: this.viewedTime.amount, end: this.viewedTime.end })
+
     const width = this.$svgWidth()
     const height = this.$svgHeight()
 
     const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION })
+    //this.lastViewedData.set(rawData);                //< ---- 100% Data ----->
+    //this.lastViewedTime.set({start , end})           //<start--- 60% ----end->
+    this.graphState.lastViewedTime.set({ start, end });
+    this.graphState.rawData.set(rawData);
+
+    const duration = rawData.reduce((acc, session) => acc + (session.endTime - session.startTime), 0)
 
     const data = this.processData(rawData)
+
+    const realPrecison = Math.max(...data.map(chan => chan.streams.map(stream => stream.values.length).reduce((acc, len) => acc + len, 0)))
+    const timePerValue = duration / realPrecison
 
     if (this.isDataEmpty(data))
       return
@@ -464,9 +544,10 @@ export class LineGraphComponent {
     this.updateTargetScales(data)
     this.updateViewedScales(delta)
 
-    this.drawLines(start, end, width, height, data, DISPLAY_PRECISION)
+    this.drawLines(start, end, width, height, data, timePerValue)
     this.drawAxis(start, end, width)
   }
+
 }
 
 
