@@ -22,15 +22,13 @@
 
        <input id="stft" type="checkbox" />
        <label for="stft" class="checkbox-text">STFT</label>
-
         <button onclick="document.getElementById('analyse').style.display='none'">Schließen</button>
         <button onclick="document.getElementById('analyse').style.display='none'">Anwenden</button>
       </div>
     </div>
 
     <button id="btn_pause" class="button big-btn" onclick="window.pauseGraph()">Pause</button>
-    <button class="button big-btn">Speichern</button>
-    <button class="button big-btn">Logger</button>
+    <button class="button big-btn" (click)="download()">Speichern</button>
     <button class="button big-btn">Scope (de)aktivieren</button>
 
     <button class="button big-btn" onclick="document.getElementById('info').style.display='block'">Info</button>

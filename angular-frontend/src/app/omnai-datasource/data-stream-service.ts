@@ -1,4 +1,4 @@
-import { computed, effect, signal, Signal, WritableSignal } from '@angular/core';
+import { computed, effect, signal, Signal, Injectable, WritableSignal } from '@angular/core';
 import { Channel, ChannelData, DataOptions, DataServer, SessionData, SessionOptions } from './data-server';
 
 class WritableChannel implements Channel {

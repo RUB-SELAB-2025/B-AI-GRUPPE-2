@@ -2,7 +2,8 @@ import { Component, ViewChild, AfterViewChecked, viewChild } from '@angular/core
 import { RouterOutlet } from '@angular/router';
 import { InfoBoxComponent } from './info-box/info-box.component';
 import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
-
+import { CsvExportService } from './omnai-datasource/csv-export.service';
+import { DummyDataService } from './omnai-datasource/dummy-data-server/dummy-data.service';
 
 @Component({
   selector: 'app-root',
@@ -17,9 +18,19 @@ export class AppComponent implements AfterViewChecked {
   outlet = viewChild(RouterOutlet);
 
   //Get Child Component
+  constructor(
+    private dataServer: DummyDataService,
+    private csvExport: CsvExportService,
+  ) {}
+
   @ViewChild(InfoBoxComponent)
   infoBoxComponent!: InfoBoxComponent;
 
+  async download() {
+    const sessionData = await this.dataServer.getData();
+    const csv = this.csvExport.toCsv(sessionData);
+    this.csvExport.triggerDownload(csv, 'data.csv');
+  }
 
   anwenden() {
       const abtast = document.getElementById('abtast') as HTMLInputElement | null;
