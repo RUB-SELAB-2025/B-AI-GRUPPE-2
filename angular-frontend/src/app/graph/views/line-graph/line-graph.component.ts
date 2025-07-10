@@ -4,11 +4,12 @@ import { ResizeObserverDirective } from '../../../shared/resize-observer.directi
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
-import { GraphStateService } from '../../../graph-state.service';  
+import { GraphStateService } from '../../../graph-state.service';
 
+import { OverviewComponent } from "./overview/overview.component";
 
 /** How many datapoints the graph data should be reduced to */
-const DISPLAY_PRECISION = 200
+const DISPLAY_PRECISION = 3840
 /** How close should two scales have to be to be set equal */
 const ROUNDING_ERROR_FRACTION = 1000
 /** How slowly should the scale adjust */
@@ -36,7 +37,7 @@ type Data = ChannelData[]
  * Stores and processes color and scale.
  */
 class ChannelView {
-  public readonly $color
+  public readonly $color: Signal<string>
   public readonly $hidden: WritableSignal<boolean> = signal(false)
 
   public readonly targetScale: { min: number, max: number } = { min: 0, max: 0 }
@@ -80,7 +81,7 @@ export type ChannelViewData = {
 
 @Component({
   selector: 'app-line-graph',
-  imports: [ResizeObserverDirective, ChannelSelectComponent],
+  imports: [ResizeObserverDirective, ChannelSelectComponent, OverviewComponent],
   standalone: true,
   providers: [DummyDataService],
   templateUrl: './line-graph.component.html',
@@ -106,12 +107,15 @@ export class LineGraphComponent {
     return [...channels.values()]
   })
 
+  readonly #lastViewedTime: WritableSignal<{ amount: number, end: null | number } | null> = signal(null)
+  public readonly $lastViewedTime: Signal<{ amount: number, end: null | number } | null> = this.#lastViewedTime
+
   /**
    * The viewed time; effectively the x axis.
    *
    * If end is set to null, the view is live.
    */
-  private viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
+  private readonly viewedTime: { amount: number, end: null | number } = { amount: 5000, end: null }
   private graphState: GraphStateService;
 
   constructor(graphState: GraphStateService) {
@@ -131,6 +135,13 @@ export class LineGraphComponent {
   public updateDimensions(dimensions: { width: number, height: number }) {
     this.$svgWidth.set(dimensions.width)
     this.$svgHeight.set(dimensions.height)
+  }
+
+  public readonly setViewTime = (viewTime: { amount?: number, end?: number | null }) => {
+    if (viewTime.amount !== undefined)
+      this.viewedTime.amount = viewTime.amount
+    if (viewTime.end !== undefined)
+      this.viewedTime.end = viewTime.end
   }
 
   /**
@@ -228,17 +239,17 @@ export class LineGraphComponent {
    *
    * @returns the color and path
    */
-  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData, precision?: number): {
+  private drawLine(start: number, end: number, width: number, height: number, min: number, max: number, channelData: ChannelData, timePerValue?: number): {
     color: string,
     path: string,
   } | null {
-    const color = this.$writechannels().get(channelData.channel.id)!.$color()
+    const color = channelData.channel.color()
 
     const dots: [number, number][] = []
     for (const stream of channelData.streams) {
       for (let i = 0; i < stream.values.length; i++) {
-        const sampleDelay = (precision)
-          ? 1000 / precision
+        const sampleDelay = (timePerValue)
+          ? timePerValue
           : this.sampleDelay(channelData.channel)
         const x = width / (end - start) * ((stream.start + i * sampleDelay) - start)
         const y = height - height / (max - min) * (stream.values[i] - min)
@@ -268,7 +279,7 @@ export class LineGraphComponent {
    * @param height svg height
    * @param data data to be drawn
    */
-  private drawLines(start: number, end: number, width: number, height: number, data: Data, precision?: number) {
+  private drawLines(start: number, end: number, width: number, height: number, data: Data, timePerValue?: number) {
 
     const drawn: { color: string, path: string }[] = []
 
@@ -280,7 +291,7 @@ export class LineGraphComponent {
 
       const { max, min } = channel.viewedScale
 
-      const path = this.drawLine(start, end, width, height, min, max, channelData, precision)
+      const path = this.drawLine(start, end, width, height, min, max, channelData, timePerValue)
 
       if (path) {
         drawn.push(path)
@@ -335,14 +346,8 @@ export class LineGraphComponent {
     for (const channelData of data) {
       if (!(this.$writechannels().has(channelData.channel.id))) {
         this.$writechannels.update(channels => {
-          // map needs to be recreated to trigger effects correctly
-          // is a better workaround possible?
-          const map = new Map()
-          for(const pair of channels) {
-            map.set(pair[0], pair[1])
-          }
-          map.set(channelData.channel.id, new ChannelView(channelData.channel.color))
-          return map
+          channels.set(channelData.channel.id, new ChannelView(channelData.channel.color))
+          return new Map(channels)
         })
       }
     }
@@ -383,6 +388,8 @@ export class LineGraphComponent {
   private async drawImmediately(delta: number = 1) {
     const { start, end } = this.getViewTime()
 
+    this.#lastViewedTime.set({ amount: this.viewedTime.amount, end: this.viewedTime.end })
+
     const width = this.$svgWidth()
     const height = this.$svgHeight()
 
@@ -392,7 +399,12 @@ export class LineGraphComponent {
     this.graphState.lastViewedTime.set({ start, end });
     this.graphState.rawData.set(rawData);
 
+    const duration = rawData.reduce((acc, session) => acc + (session.endTime - session.startTime), 0)
+
     const data = this.processData(rawData)
+
+    const realPrecison = Math.max(...data.map(chan => chan.streams.map(stream => stream.values.length).reduce((acc, len) => acc + len, 0)))
+    const timePerValue = duration / realPrecison
 
     if (this.isDataEmpty(data))
       return
@@ -402,7 +414,7 @@ export class LineGraphComponent {
     this.updateTargetScales(data)
     this.updateViewedScales(delta)
 
-    this.drawLines(start, end, width, height, data, DISPLAY_PRECISION)
+    this.drawLines(start, end, width, height, data, timePerValue)
     this.drawAxis(start, end, width)
   }
 
