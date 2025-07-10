@@ -1,7 +1,9 @@
-import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, viewChild, WritableSignal } from '@angular/core';
+//import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, viewChild, WritableSignal, OnInit, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
 import { LineDataService } from './line-data.service';
 import { ResizeObserverDirective } from '../../../shared/resize-observer.directive';
+import { ZoomControlsComponent } from './zoom-controls/zoom-controls.component'; // Pfad anpassen
 
 /** How close should two scales have to be to be set equal */
 const ROUNDING_ERROR_FRACTION = 1000
@@ -40,6 +42,7 @@ class ChannelView {
     this.$hue.set(hue)
   }
 
+
   /**
    * Smoothly move the viewed scale closer to the target scale.
    *
@@ -69,7 +72,7 @@ class ChannelView {
 
 @Component({
   selector: 'app-line-graph',
-  imports: [ResizeObserverDirective],
+  imports: [ResizeObserverDirective, ZoomControlsComponent],
   standalone: true,
   providers: [LineDataService],
   templateUrl: './line-graph.component.html',
@@ -84,7 +87,24 @@ export class LineGraphComponent {
   private readonly $svgHeight = signal(150)
 
   private readonly channels: { [id: number]: ChannelView } = {}
+  private boundHandleKey = this.handleKey.bind(this);
 
+  public handleKey(event: KeyboardEvent) {
+    console.log('LineGraphComponent received key:', event.key);
+    switch (event.key) {
+      case '+':
+      case '=':
+        this.onZoomIn();
+        break;
+      case '-':
+        this.onZoomOut();
+        break;
+      case '0':
+        this.onResetZoom();
+        break;
+    }
+  }
+  
   /**
    * The viewed time; effectively the x axis.
    *
@@ -99,6 +119,9 @@ export class LineGraphComponent {
     }
     drawLoop()
   }
+
+  
+
 
   /**
    * Gets a hue that is as far away from preexisting hues as possible.
@@ -362,5 +385,17 @@ export class LineGraphComponent {
     this.drawLines(start, end, width, height, data)
 
     this.drawAxis(start, end, width)
+  }
+  onZoomIn() {
+    this.viewedTime.amount *= 0.8;
+  }
+  
+  onZoomOut() {
+    this.viewedTime.amount *= 1.25;
+  }
+  
+  onResetZoom() {
+    this.viewedTime.amount = 5000;
+    this.viewedTime.end = null;
   }
 }
