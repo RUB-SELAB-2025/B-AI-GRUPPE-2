@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { GraphComponent } from './graph/graph.component';
+import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
 import { RenderMode } from '@angular/ssr';
 
 export const routes: Routes = [
@@ -8,14 +8,12 @@ export const routes: Routes = [
     children: [
       {
         path: 'main',
-        component: GraphComponent,
-        
-      }
+        component: LineGraphComponent,
+      },
     ],
   },
   {
-  path: '**',
-  redirectTo: 'graph/main'
-}
-
+    path: '**',
+    redirectTo: 'graph/main',
+  },
 ];

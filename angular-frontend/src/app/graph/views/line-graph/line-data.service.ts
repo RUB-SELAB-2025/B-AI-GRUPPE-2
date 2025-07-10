@@ -29,7 +29,7 @@ export class LineDataService {
     this.values = [[], []]
     this.start = Date.now()
     this.generateData(this.values[0], 100, 100000, 1, 3, 2)
-    this.generateData(this.values[1], 100, 100000, 5, 7, 1)
+    this.generateData(this.values[1], 100, 100000, 2, 7, 1)
   }
 
   private generateData(stream: number[], interval: number, rate: number, frequency: number, vOffset: number, amp: number) {
