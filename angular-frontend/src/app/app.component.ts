@@ -1,6 +1,7 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, AfterViewChecked, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { InfoBoxComponent } from './info-box/info-box.component';
+import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
 
 
 @Component({
@@ -10,9 +11,10 @@ import { InfoBoxComponent } from './info-box/info-box.component';
   styleUrl: './app.component.css',
   standalone: true
 })
-export class AppComponent {
+export class AppComponent implements AfterViewChecked {
   title = 'OmnAIView';
   ModifyWindow = false
+  outlet = viewChild(RouterOutlet);
 
   //Get Child Component
   @ViewChild(InfoBoxComponent)
@@ -35,5 +37,16 @@ export class AppComponent {
 
       if(infoBox) {infoBox.style.display = 'none';}
     }
-  
+
+  ngAfterViewChecked(): void {
+      if (typeof window !== "undefined") {
+        (window as any).pauseGraph = () => {
+          const cmp = this.outlet()?.component;
+          if (cmp instanceof LineGraphComponent) {
+            cmp.setPause();
+          }
+        }
+      }
+  }
+
 }

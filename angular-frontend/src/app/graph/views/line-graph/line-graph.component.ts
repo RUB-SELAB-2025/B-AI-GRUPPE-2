@@ -4,8 +4,10 @@ import { ResizeObserverDirective } from '../../../shared/resize-observer.directi
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
-import { GraphStateService } from '../../../graph-state.service';  
-
+import { GraphStateService } from '../../../graph-state.service';
+import { MouseInteractionComponent } from '../../mouse-interaction/mouse-interaction.component';
+import { raw } from 'express';
+import { channel } from 'node:diagnostics_channel';
 
 /** How many datapoints the graph data should be reduced to */
 const DISPLAY_PRECISION = 200
@@ -80,7 +82,7 @@ export type ChannelViewData = {
 
 @Component({
   selector: 'app-line-graph',
-  imports: [ResizeObserverDirective, ChannelSelectComponent],
+  imports: [ResizeObserverDirective, ChannelSelectComponent, MouseInteractionComponent],
   standalone: true,
   providers: [DummyDataService],
   templateUrl: './line-graph.component.html',
@@ -106,6 +108,10 @@ export class LineGraphComponent {
     return [...channels.values()]
   })
 
+  private readonly mouseInteraction = viewChild.required(MouseInteractionComponent);
+
+  private lastMouseEvent : null | MouseEvent = null;
+
   /**
    * The viewed time; effectively the x axis.
    *
@@ -124,6 +130,114 @@ export class LineGraphComponent {
   }
 
   /**
+    * Event listeners
+    */
+
+  onResize(dimensions : {width : number, height : number}) {
+    this.updateDimensions(dimensions);
+    this.mouseInteraction().getHeight(dimensions);
+  }
+
+  onMouseMove(event : MouseEvent) {
+    this.lastMouseEvent = event;
+    this.mouseInteraction().onMouseMove(event);
+  }
+
+  onMouseLeave(event: MouseEvent) {
+    this.lastMouseEvent = null;
+    this.mouseInteraction().onMouseLeave(event);
+  }
+
+  onClick(event : MouseEvent) {
+    const { start, end } = this.getViewTime();
+
+    const rel_x = event.clientX / this.$svgWidth();
+
+    const t = start + rel_x * this.viewedTime.amount;
+
+    this.mouseInteraction().onClick(t);
+  }
+
+  /**
+    * Update Bars
+  */
+  private async updateBars() {
+    const { start, end } = this.getViewTime();
+
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION })
+
+    const data = this.processData(rawData);
+
+    if (this.isDataEmpty(data)) return;
+
+    this.mouseInteraction().updateBars(start, end, this.viewedTime.amount, this.$svgWidth());
+  }
+
+  /**
+    * Update Text of Bars
+  */
+  private async updateText() {
+    const {start, end } = this.getViewTime();
+    const width = this.$svgWidth();
+    const height = this.$svgHeight();
+
+    const rawData = await this.dataSource.getData({ endTime: end, duration: this.viewedTime.amount, precision: DISPLAY_PRECISION });
+
+    const data = this.processData(rawData);
+    if (this.isDataEmpty(data)) return;
+    if (!this.lastMouseEvent) return;
+
+    for (const channelData of data) {
+      const channels = this.$writechannels();
+      const { max, min } = channels.get(channelData.channel.id)!.viewedScale;
+      const color = channels.get(channelData.channel.id)!.$color();
+      const closest = this.getClosest(start, end, width, height, min, max, channelData, this.lastMouseEvent.clientX);
+
+
+      const id : number = +channelData.channel.id;
+
+      this.mouseInteraction().setText(id, closest.y, color);
+    }
+  }
+
+  /**
+    * Returns closest point to pos
+  */
+  private getClosest( start : number, end : number, width : number, height : number, min : number, max : number, channelData : ChannelData, mouseX : number) {
+    const dots = this.getDots(start, end, width, height, min, max, channelData, DISPLAY_PRECISION);
+    let closest : {x : number, y : number} = {x : 0, y : 0};
+    let smallest = Infinity;
+
+    for (const dot of dots) {
+      const dist = Math.abs(dot[0] - mouseX);
+
+      if (dist < smallest) {
+        smallest = dist;
+        closest = {x : dot[0], y : dot[1]};
+      }
+    }
+    return closest;
+  }
+
+  /**
+* Returns array of all dots on screen
+  */
+  private getDots(start : number, end : number, width : number, height : number, min : number, max : number, channelData : ChannelData, precision? : number) {
+    const dots: [number, number][] = []
+    for (const stream of channelData.streams) {
+      for (let i = 0; i < stream.values.length; i++) {
+        const sampleDelay = (precision)
+          ? 1000 / precision
+          : this.sampleDelay(channelData.channel)
+        const x = width / (end - start) * ((stream.start + i * sampleDelay) - start)
+        const y = height - height / (max - min) * (stream.values[i] - min)
+        dots.push([x, stream.values[i]])
+}
+    }
+    return dots;
+  }
+
+  /**
    * Updates the recorded dimensions of the svg.
    *
    * Gets called from an HTML callback.
@@ -134,9 +248,24 @@ export class LineGraphComponent {
   }
 
   /**
+    * Pause Graph visually
+  */
+  public setPause() {
+    const btn = document.getElementById("btn_pause") as HTMLElement;
+    if (this.viewedTime.end == null) {
+      const { start, end } = this.getViewTime();
+      this.viewedTime.end = start + this.viewedTime.amount;
+      btn.innerHTML = "Weiter";
+    } else {
+      this.viewedTime.end = null;
+      btn.innerHTML = "Pause";
+    }
+  }
+
+  /**
    * Gets the currently viewed time frame.
    */
-  public getViewTime(): { start: number, end: number } {
+public getViewTime(): { start: number, end: number } {
     const end = (this.viewedTime.end === null || this.viewedTime.end === -1)
       ? Date.now()
       : this.viewedTime.end
@@ -194,6 +323,9 @@ export class LineGraphComponent {
     this.drawState = (this.viewedTime.end === null)
       ? "scheduled"
       : "cooldown"
+
+    this.updateBars();
+    this.updateText();
 
     requestAnimationFrame(async delta => {
       const scheduled = (this.drawState === "scheduled")
@@ -344,6 +476,7 @@ export class LineGraphComponent {
           map.set(channelData.channel.id, new ChannelView(channelData.channel.color))
           return map
         })
+        this.mouseInteraction().addNewText(+channelData.channel.id);
       }
     }
   }

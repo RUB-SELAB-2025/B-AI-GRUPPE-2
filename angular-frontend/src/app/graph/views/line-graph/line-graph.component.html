@@ -1,5 +1,10 @@
-<svg #svg appResizeObserver (resize)="updateDimensions($event)">
+<svg #svg appResizeObserver
+(resize)="onResize($event)"
+(mousemove)="onMouseMove($event)"
+(mouseleave)="onMouseLeave($event)"
+(click)="onClick($event)">
   <g #xAxis></g>
+  <g app-mouse-interaction></g>
 
   @for (entry of $drawn(); track $index) {
   <path [attr.d]="entry.path" fill="none" [attr.stroke]="entry.color" stroke-width="2" />
