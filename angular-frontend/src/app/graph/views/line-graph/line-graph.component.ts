@@ -1,6 +1,7 @@
-import { Component, computed, ElementRef, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, linkedSignal, Signal, signal, viewChild, WritableSignal, OnInit, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
 import { ResizeObserverDirective } from '../../../shared/resize-observer.directive';
+import { ZoomControlsComponent } from './zoom-controls/zoom-controls.component'; // Pfad anpassen
 import { Channel, DataServer, SessionData } from '../../../omnai-datasource/data-server';
 import { DummyDataService } from '../../../omnai-datasource/dummy-data-server/dummy-data.service';
 import { ChannelSelectComponent } from "../../channel-vis-selection/channel-select/channel-select.component";
@@ -81,14 +82,12 @@ export type ChannelViewData = {
 
 @Component({
   selector: 'app-line-graph',
-  imports: [ResizeObserverDirective, ChannelSelectComponent, MouseInteractionComponent, OverviewComponent],
+  imports: [ResizeObserverDirective, ZoomControlsComponent, ChannelSelectComponent, MouseInteractionComponent, OverviewComponent],
   standalone: true,
   providers: [DummyDataService],
   templateUrl: './line-graph.component.html',
   styleUrl: './line-graph.component.css'
 })
-
-
 export class LineGraphComponent {
   readonly xAxis = viewChild.required<ElementRef<SVGGElement>>('xAxis');
 
@@ -113,6 +112,32 @@ export class LineGraphComponent {
   readonly #lastViewedTime: WritableSignal<{ amount: number, end: null | number } | null> = signal(null)
   public readonly $lastViewedTime: Signal<{ amount: number, end: null | number } | null> = this.#lastViewedTime
 
+  private boundHandleKey = this.handleKey.bind(this);
+
+  public handleKey(event: KeyboardEvent) {
+    console.log('LineGraphComponent received key:', event.key);
+    switch (event.key) {
+      case '+':
+      case '=':
+        this.onZoomIn();
+        break;
+      case '-':
+        this.onZoomOut();
+        break;
+      case '0':
+        this.onResetZoom();
+        break;
+      case 'ArrowLeft':
+        this.scrollLeft();
+        break;
+      case 'ArrowRight':
+        this.scrollRight();
+        break;
+      case 'ArrowUp':
+        this.scrollReset();
+        break;
+    }
+  }
   /**
    * The viewed time; effectively the x axis.
    *
@@ -548,6 +573,42 @@ public getViewTime(): { start: number, end: number } {
     this.drawAxis(start, end, width)
   }
 
+  onZoomIn() {
+    this.viewedTime.amount *= 0.8;
+  }
+
+  onZoomOut() {
+    this.viewedTime.amount *= 1.25;
+  }
+
+  onResetZoom() {
+    this.viewedTime.amount = 5000;
+    this.viewedTime.end = null;
+  }
+
+  private scrollStep = 1000; // Scroll um 1 Sekunde
+
+  scrollLeft() {
+    console.log("a pressed");
+    if (this.viewedTime.end === null) {
+      this.viewedTime.end = this.getViewTime().end;
+    }
+    this.viewedTime.end -= this.scrollStep;
+    this.draw();
+  }
+
+  scrollRight() {
+    if (this.viewedTime.end === null) {
+      this.viewedTime.end = this.getViewTime().end;
+    }
+    this.viewedTime.end += this.scrollStep;
+    this.drawImmediately();
+  }
+
+  scrollReset() {
+    this.viewedTime.end = null;
+    this.drawImmediately();
+  }
 }
 
 

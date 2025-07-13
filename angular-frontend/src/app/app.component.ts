@@ -1,19 +1,40 @@
-import { Component, ViewChild, AfterViewChecked, viewChild } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnDestroy, viewChild, AfterViewChecked } from '@angular/core';
+import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
 import { RouterOutlet } from '@angular/router';
 import { InfoBoxComponent } from './info-box/info-box.component';
-import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
 import { CsvExportService } from './omnai-datasource/csv-export.service';
 import { DummyDataService } from './omnai-datasource/dummy-data-server/dummy-data.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,InfoBoxComponent],
+  imports: [RouterOutlet, InfoBoxComponent, LineGraphComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  standalone: true
+  standalone: true,
 })
-export class AppComponent implements AfterViewChecked {
+export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy {
   title = 'OmnAIView';
+  @ViewChild(LineGraphComponent) lineGraph!: LineGraphComponent;
+
+  private handleKeyBound = this.handleKey.bind(this);
+
+  ngAfterViewInit() {
+    window.addEventListener('keydown', this.handleKeyBound);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('keydown', this.handleKeyBound);
+  }
+
+  handleKey(event: KeyboardEvent) {
+    console.log('AppComponent detected key:', event.key);
+    if (this.lineGraph) {
+      this.lineGraph.handleKey(event);
+    } else {
+      console.warn('LineGraphComponent not yet initialized');
+    }
+  }
+
   ModifyWindow = false
   outlet = viewChild(RouterOutlet);
 
