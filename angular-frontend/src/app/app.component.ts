@@ -7,7 +7,7 @@ import { DummyDataService } from './omnai-datasource/dummy-data-server/dummy-dat
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, LineGraphComponent],
+  imports: [RouterOutlet, InfoBoxComponent, LineGraphComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true,
