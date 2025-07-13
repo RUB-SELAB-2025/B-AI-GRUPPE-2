@@ -1,0 +1,8 @@
+@if (channels().length !== 0) {
+<div class="channel-select-buttons">
+  @for (channel of channels(); track $index) {
+  <div [style.backgroundColor]="channel.$color()" [class.off]="channel.$hidden()"
+    (click)="channel.$hidden.set(!channel.$hidden())"></div>
+  }
+</div>
+}

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GraphComponent } from './graph.component';
+import { MouseTrackerComponent } from './mouse-tracker.component';
 
-describe('GraphComponent', () => {
-  let component: GraphComponent;
-  let fixture: ComponentFixture<GraphComponent>;
+describe('MouseTrackerComponent', () => {
+  let component: MouseTrackerComponent;
+  let fixture: ComponentFixture<MouseTrackerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GraphComponent]
+      imports: [MouseTrackerComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(GraphComponent);
+    fixture = TestBed.createComponent(MouseTrackerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

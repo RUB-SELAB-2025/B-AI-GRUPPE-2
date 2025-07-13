@@ -9,64 +9,60 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+
+
+  </style>
+
 </head>
+
+<script>
+  function closeModal() {
+    document.getElementById("instructionModal").style.display = "none";
+    localStorage.setItem("instructionSeen", "true");
+  }
+
+  window.onload = function () {
+    if (localStorage.getItem("instructionSeen") === "true") {
+      document.getElementById("instructionModal").style.display = "none";
+    }
+  };
+</script>
+
+  <div id="instructionModal">
+  <div class="modal-content">
+    <h2>Willkommen!</h2>
+    <p>Bitte prüfen Sie, ob ein Oszilloskop verbunden ist.</p>
+    <svg fill="#000000" version="1.1" id="Capa_1" width="30%" height="30%" viewBox="0 0 552.081 552.082"
+	 xml:space="preserve">
+<g>
+	<path d="M278.154,378.259c0,4.504,4.446,8.156,9.906,8.156h254.124c5.46,0,9.896-3.652,9.896-8.156v-8.147l-14.745-53.33
+		c0.277-1.425,0.449-2.907,0.449-4.408V188.921c0-12.852-8.463-23.256-18.886-23.256h-18.896H330.241c0,0-8.453,0-18.896,0
+		s-18.886,10.404-18.886,23.256v123.462c0,1.491,0.162,2.974,0.439,4.398l-11.131,40.239H37.495V332.12h1.243
+		c3.309,0,5.996-1.894,5.996-4.236s0-4.235,0-4.235H24.27v4.235c0,2.343,2.678,4.236,5.986,4.236h1.252v26.929
+		c0,1.663,1.339,3.002,2.984,3.002v0.239h245.813l-2.161,7.832C278.154,370.122,278.154,373.774,278.154,378.259z M321.262,194.324
+		c0-2.056,2.888-3.701,6.426-3.701h174.87c3.557,0,6.444,1.645,6.444,3.701v107.779c0,2.047-2.888,3.701-6.444,3.701h-174.87
+		c-3.538,0-6.426-1.654-6.426-3.701V194.324z"/>
+	<path d="M7.899,320.932h53.215c4.36,0,7.898-3.548,7.898-7.918V211.527c0-4.38-3.538-7.918-7.898-7.918H7.899
+		c-4.37,0-7.899,3.538-7.899,7.918v101.487C-0.009,317.384,3.519,320.932,7.899,320.932z M34.387,245.12
+		c-0.86,0-1.559-0.698-1.559-1.549c0-0.87,0.698-1.559,1.559-1.559c0.861,0,1.559,0.688,1.559,1.559
+		C35.945,244.413,35.248,245.12,34.387,245.12z M34.387,235.94c-2.61,0-4.733-2.123-4.733-4.714c0-2.611,2.123-4.733,4.733-4.733
+		c2.601,0,4.724,2.123,4.724,4.733C39.111,233.817,36.988,235.94,34.387,235.94z M17.155,215.515h34.454
+		c1.081,0,1.96,0.88,1.96,1.97c0,1.081-0.88,1.96-1.96,1.96H17.155c-1.081,0-1.97-0.879-1.97-1.96
+		C15.186,216.395,16.075,215.515,17.155,215.515z"/>
+	<path d="M391.814,267.076h42.936c3.566,0,6.454-2.888,6.454-6.455v-25.8c0-3.566-2.888-6.455-6.454-6.455h-25.781v-0.736v-0.096
+		c0-3.758-3.031-6.799-6.799-6.799h-10.021c-3.748,0-6.789,3.041-6.789,6.799v33.086
+		C385.359,264.197,388.247,267.076,391.814,267.076z"/>
+</g>
+</svg>
+    <div>
+      <button class="close-btn" onclick="closeModal()">Schließen</button>
+    </div>
+  </div>
+</div>
 
 <body>
   <app-root></app-root>
 </body>
-
- <title>Popup</title>
-
-
-
-<!-- Let's add some buttons -->
-  <div style="text-align: left; margin-top: 1rem;">
-
-    <button class = "button big-btn" onclick="document.getElementById('analyse').style.display='block'">Analyse</button>
-    <div id="analyse">
-    <div class="analyse-content">
-      <p>Analyse Möglichkeiten:</p>
-       <input id="default" type="checkbox" />
-       <label for="default" class="checkbox-text">Standard</label>
-
-       <input id="fft" type="checkbox" />
-       <label for="fft" class="checkbox-text">FFT</label>
-
-       <input id="cross" type="checkbox" />
-       <label for="cross" class="checkbox-text">Kreuzkorrelation</label>
-
-       <input id="stft" type="checkbox" />
-       <label for="stft" class="checkbox-text">STFT</label>
-
-        <button onclick="document.getElementById('analyse').style.display='none'">Schließen</button>
-        <button onclick="document.getElementById('analyse').style.display='none'">Anwenden</button>
-      </div>
-    </div>
-
-    <button class="button big-btn">Pause</button>
-    <button class="button big-btn">Speichern</button>
-    <button class="button big-btn">Logger</button>
-    <button class="button big-btn">Scope (de)aktivieren</button>
-    
-    <button class="button big-btn" onclick="document.getElementById('info').style.display='block'">Info</button>
-    <div id="info">
-    <div class="info-content">
-
-      <p>Welche Informationen würden Sie gerne einsehen?</p>
-
-        <input id="abtast" type="checkbox" />
-        <label for="abtast" class="checkbox-text">Abtastrate</label>
-
-        <input id="proj-info" type="checkbox" />
-        <label for="proj-info" class="checkbox-text">Projekt Info</label>
-
-        <button onclick="document.getElementById('info').style.display='none'">Schließen</button>
-        <button onclick="document.getElementById('info').style.display='none'">Anwenden</button>
-      </div>
-    </div>
-  </div>
-
-
-
 
 </html>

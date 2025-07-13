@@ -4,3 +4,72 @@
 
 <router-outlet></router-outlet>
 <app-line-graph></app-line-graph>
+
+<!-- Let's add some buttons -->
+  <div style="text-align: left; margin-top: 1rem;">
+
+    <button id="btn_pause" class="button big-btn" onclick="window.pauseGraph()">Pause</button>
+    <button class="button big-btn" (click)="download()">Speichern</button>
+    <button class="button big-btn">Scope (de)aktivieren</button>
+
+    <button class="button big-btn" onclick="document.getElementById('info').style.display='block'">Info</button>
+    <div id="info">
+      <div class="info-content">
+
+        <p>Welche Informationen würden Sie gerne einsehen?</p>
+
+        <input id="abtast" type="checkbox" />
+        <label for="abtast" class="checkbox-text">Abtastrate</label>
+
+        <input id="proj-info" type="checkbox" />
+        <label for="proj-info" class="checkbox-text">Projekt Info</label>
+
+        <input id="mousePos" type="checkbox" />
+        <label for="mousePos" class="checkbox-text">Position der Maus</label>
+
+        <button onclick="document.getElementById('info').style.display='none'">Schließen</button>
+        <button (click)="anwenden()">Anwenden</button>
+      </div>
+    </div>
+
+
+      <button class="button big-btn" onclick="document.getElementById('help').style.display='block'">Hilfe</button>
+    <div id="help">
+      <div class="help-content">
+        <p>Benötigen Sie Hilfe? Bitte wählen Sie aus, womit Sie gerade ein Problem haben.</p>
+        <button class="button sub-btn" onclick="document.getElementById('display').style.display='block'">Anzeige?</button>
+        <button class="button sub-btn" onclick="document.getElementById('logger').style.display='block'">Logger?</button>
+        <button class="button sub-btn" onclick="document.getElementById('connection').style.display='block'">Verbindung?</button>
+        <br>
+          <br>
+          <button onclick="document.getElementById('help').style.display='none'">Schließen</button>
+      </div>
+    </div>
+
+<div id="logger" class="popup" style="display:none;">
+  <div class="popup-content">
+    <h2>Wofür ist der Logger gedacht?</h2>
+    <p>Mit dem Logger können Sie die ermittelten Daten in eine Excel-kompatible .csv-Datei exportieren.</p>
+    <button onclick="document.getElementById('logger').style.display='none'">Schließen</button>
+  </div>
+</div>
+
+<div id="display" class="popup" style="display:none;">
+  <div class="popup-content">
+    <h2>Warum werden meine Daten nicht korrekt angezeigt?</h2>
+    <p>Eventuell ist ihre Anwendung zu klein. Versuchen Sie bitte, dieses Fenster zu maximieren und probieren Sie es erneut.</p>
+    <button onclick="document.getElementById('display').style.display='none'">Schließen</button>
+  </div>
+</div>
+
+<div id="connection" class="popup" style="display:none;">
+  <div class="popup-content">
+    <h2>Warum wird der Input nicht richtig angezeigt?</h2>
+    <p>Versuchen Sie bitte, das Gerät zu entfernen und dann erneut anzuschließen. </p>
+    <button onclick="document.getElementById('connection').style.display='none'">Schließen</button>
+  </div>
+</div>
+</div>
+
+<!--<app-info-box></app-info-box>-->
+
