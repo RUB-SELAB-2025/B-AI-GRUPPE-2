@@ -91,6 +91,8 @@ export type ChannelViewData = {
 export class LineGraphComponent {
   readonly xAxis = viewChild.required<ElementRef<SVGGElement>>('xAxis');
 
+  readonly yAxis = viewChild.required<ElementRef<SVGGElement>>('yAxis');
+
   private readonly dataSource: DataServer = inject(DummyDataService);
 
   public readonly $svgWidth = signal(300)      //How many pixels
@@ -477,6 +479,64 @@ public getViewTime(): { start: number, end: number } {
   }
 
   /**
+   * Draws the y axis.
+   * @param height full screen height.
+   */
+private drawYAxis(height: number, min: number, max: number, xOffset: number, container: SVGGElement, color: string) {
+
+  const scale = d3.scaleLinear()
+    .domain([min, max])
+    .range([height, 0]);
+
+  const axis = d3.axisLeft(scale);
+
+  const axisGroup = d3.select(container) //lets us apply color to each axis individually
+    .append("g")
+    .attr("class", "y-axis")
+    .attr("transform", `translate(${xOffset}, 0)`)
+    .call(axis);
+
+  /* Legacy in case we want to do a coloured axis
+  axisGroup.selectAll("path")
+    .attr("stroke", color);
+  */
+
+  axisGroup.selectAll("line")
+    .attr("stroke", color);
+  
+
+  axisGroup.selectAll("text")
+    .attr("fill", color);
+}
+
+
+
+private drawYAxes(data: Data, height: number) {
+  const container: SVGGElement = this.yAxis().nativeElement;
+
+  // Clear previous axes
+  d3.select(container).selectAll("*").remove();
+
+  let offsetX = 25;
+
+  for (const channelData of data) {
+      const channel = this.$writechannels().get(channelData.channel.id)!
+
+      if (channel.$hidden())
+        continue
+
+    const { min, max } = channel.viewedScale; //Scale it to the data we got
+    const color = channel.$color(); // Get channel color
+
+    this.drawYAxis(height, min, max, offsetX, container, color);
+    offsetX += 40;
+  }
+}
+
+
+
+
+  /**
    * Checks whether the data contains any values
    *
    * @param data data to be checked
@@ -571,6 +631,7 @@ public getViewTime(): { start: number, end: number } {
 
     this.drawLines(start, end, width, height, data, timePerValue)
     this.drawAxis(start, end, width)
+    this.drawYAxes(data, height) /**should add a y-axis */
   }
 
   onZoomIn() {
