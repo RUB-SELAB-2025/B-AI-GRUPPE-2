@@ -37,17 +37,17 @@ describe('InfoBoxComponent', () => {
   });
 
   it('should correctly compute relativeMouseX', () => {
-    component.windowWidth = 1000;
+    component.windowWidth.set(1000);
     component.mouseX.set(250); // 25 / 100 = 0.25
     expect(component.relativeMouseX()).toBeCloseTo(0.25, 2);
   });
 
   it('should compute correct yVal_Channel0 from mock data', () => {
-    component.windowWidth = 1000;
+    component.windowWidth.set(1000);
     component.mouseX.set(400); // relativeMouseX = 0.4
     fixture.detectChanges();
 
-    const index = component.positionToRead_Channel0();
+    const index = component.positionToRead();
     const yValue = component.yVal_Channel0();
 
     expect(index).toBe(2); // floor(5 * 0.4)
