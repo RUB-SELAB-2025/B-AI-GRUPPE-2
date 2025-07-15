@@ -4,6 +4,7 @@
 (mouseleave)="onMouseLeave($event)"
 (click)="onClick($event)">
   <g #xAxis></g>
+  <g #yAxis></g> <!-- Added y-Axis, should work -->
   <g app-mouse-interaction></g>
 
     @for (entry of $drawn(); track $index) {
