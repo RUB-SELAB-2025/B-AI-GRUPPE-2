@@ -17,14 +17,11 @@
 
         <p>Welche Informationen würden Sie gerne einsehen?</p>
 
-        <input id="abtast" type="checkbox" />
-        <label for="abtast" class="checkbox-text">Abtastrate</label>
-
-        <input id="proj-info" type="checkbox" />
-        <label for="proj-info" class="checkbox-text">Projekt Info</label>
-
         <input id="mousePos" type="checkbox" />
-        <label for="mousePos" class="checkbox-text">Position der Maus</label>
+        <label for="mousePos" class="checkbox-text">Position der Maus (ms)</label>
+
+        <input id="yVals" type="checkbox" />
+        <label for="yVals" class="checkbox-text">y-Werte (mV)</label>
 
         <button onclick="document.getElementById('info').style.display='none'">Schließen</button>
         <button (click)="anwenden()">Anwenden</button>

@@ -7,7 +7,7 @@ import { DummyDataService } from './omnai-datasource/dummy-data-server/dummy-dat
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, InfoBoxComponent, LineGraphComponent],
+  imports: [RouterOutlet, InfoBoxComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true,
@@ -54,8 +54,7 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
   }
 
   anwenden() {
-      const abtast = document.getElementById('abtast') as HTMLInputElement | null;
-      const projInfo = document.getElementById('proj-info') as HTMLInputElement | null;
+      const yVals = document.getElementById('yVals') as HTMLInputElement | null;
       const mousePos = document.getElementById('mousePos') as HTMLInputElement | null;
       const infoBox = document.getElementById('info') as HTMLInputElement | null;
 
@@ -64,6 +63,13 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
       }
       else{
         this.infoBoxComponent.MouseTrackerActive = false
+      }
+
+      if(yVals && yVals.checked){
+        this.infoBoxComponent.yValDisplay = true
+      }
+      else{
+        this.infoBoxComponent.yValDisplay = false
       }
 
 

@@ -59,21 +59,30 @@ export class InfoBoxComponent {
     return Math.round(valuesLength * this.relativeMouseX());
   });
 
-  readonly yVal_Channel0 = computed(() => {
-    const values = this.lastViewedData()[0]?.data?.[0]?.values; //index 0 for channel 0
-    const position = this.positionToRead();
-    //check if values exist and if position is valid
+  // Add this computed signal to your class
+readonly yVals = computed(() => {
+  // Get the raw data and the current reading position
+  const rawData = this.lastViewedData();
+  const position = this.positionToRead();
+
+  // Return an empty array if the data structure isn't ready
+  if (!rawData || !rawData[0]?.data) {
+    return [];
+  }
+
+  // Map over each channel's data to get the corresponding value at the mouse position
+  return rawData[0].data.map(channel => {
+    const values = channel.values;
+    // Check if values exist and if the position is valid
     const val = (values && position >= 0 && position < values.length) ? values[position] : undefined;
-    //rounding to 2 decimal places if val is a number
+    
+    // Round the value to 2 decimal places if it's a number, otherwise return 0
     return typeof val === 'number' ? Math.round(val * 100) / 100 : 0;
   });
+});
 
-  readonly yVal_Channel1 = computed(() => {
-    const values = this.lastViewedData()[0]?.data?.[1]?.values; //index 1 for channel 1
-    const position = this.positionToRead();
-    const val = (values && position >= 0 && position < values.length) ? values[position] : undefined;
-    return typeof val === 'number' ? Math.round(val * 100) / 100 : undefined; // Or 0, or null
-  });
+  //this.lastViewedData()[0]?.data?  length
+  //loop and make array with yVals
 
   //X Coordinate of the mouse
   readonly xVal = computed(() => {
@@ -88,6 +97,7 @@ export class InfoBoxComponent {
   });
 
   MouseTrackerActive = false;
+  yValDisplay = false;
   displayedChannel = 0;
 
   @HostListener('document:mousemove', ['$event'])
