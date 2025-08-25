@@ -7,38 +7,40 @@
 <!-- Let's add some buttons -->
   <div style="text-align: left; margin-top: 1rem;">
 
-    <button id="btn_pause" class="button big-btn" onclick="window.pauseGraph()">Pause</button>
-    <button class="button big-btn" (click)="download()">Speichern</button>
-    <button class="button big-btn">Scope (de)aktivieren</button>
+    <button mat-raised-button id="btn_pause" onclick="window.pauseGraph()">Pause</button>
+    <button mat-raised-button (click)="download()">Speichern</button>
+    <button mat-raised-button>Scope (de)aktivieren</button>
 
-    <button class="button big-btn" onclick="document.getElementById('info').style.display='block'">Info</button>
+    <button mat-raised-button onclick="document.getElementById('info').style.display='block'">Info</button>
     <div id="info">
       <div class="info-content">
 
         <p>Welche Informationen würden Sie gerne einsehen?</p>
 
-        <input id="mousePos" type="checkbox" />
-        <label for="mousePos" class="checkbox-text">Position der Maus (ms)</label>
+        <mat-divider></mat-divider>
 
-        <input id="yVals" type="checkbox" />
-        <label for="yVals" class="checkbox-text">y-Werte (mV)</label>
+        <mat-slide-toggle checked (change)="mousePosCh($event)">Position der Maus (ms)</mat-slide-toggle>
+        <mat-slide-toggle checked (change)="yValsCh($event)">y-Werte (mV)</mat-slide-toggle>
 
-        <button onclick="document.getElementById('info').style.display='none'">Schließen</button>
-        <button (click)="anwenden()">Anwenden</button>
+        <mat-divider></mat-divider>
+
+        <button mat-raised-button checked (click)="anwenden()">Anwenden</button>
       </div>
     </div>
 
 
-      <button class="button big-btn" onclick="document.getElementById('help').style.display='block'">Hilfe</button>
+      <button mat-raised-button onclick="document.getElementById('help').style.display='block'">Hilfe</button>
     <div id="help">
       <div class="help-content">
         <p>Benötigen Sie Hilfe? Bitte wählen Sie aus, womit Sie gerade ein Problem haben.</p>
-        <button class="button sub-btn" onclick="document.getElementById('display').style.display='block'">Anzeige?</button>
-        <button class="button sub-btn" onclick="document.getElementById('logger').style.display='block'">Logger?</button>
-        <button class="button sub-btn" onclick="document.getElementById('connection').style.display='block'">Verbindung?</button>
+        <mat-divider></mat-divider>
+        <button mat-raised-button onclick="document.getElementById('display').style.display='block'">Anzeige?</button>
+        <button mat-raised-button onclick="document.getElementById('logger').style.display='block'">Logger?</button>
+        <button mat-raised-button onclick="document.getElementById('connection').style.display='block'">Verbindung?</button>
         <br>
           <br>
-          <button onclick="document.getElementById('help').style.display='none'">Schließen</button>
+          <mat-divider></mat-divider>
+          <button mat-raised-button onclick="document.getElementById('help').style.display='none'">Schließen</button>
       </div>
     </div>
 
@@ -46,7 +48,7 @@
   <div class="popup-content">
     <h2>Wofür ist der Logger gedacht?</h2>
     <p>Mit dem Logger können Sie die ermittelten Daten in eine Excel-kompatible .csv-Datei exportieren.</p>
-    <button onclick="document.getElementById('logger').style.display='none'">Schließen</button>
+    <button mat-raised-button onclick="document.getElementById('logger').style.display='none'">Schließen</button>
   </div>
 </div>
 
@@ -54,7 +56,7 @@
   <div class="popup-content">
     <h2>Warum werden meine Daten nicht korrekt angezeigt?</h2>
     <p>Eventuell ist ihre Anwendung zu klein. Versuchen Sie bitte, dieses Fenster zu maximieren und probieren Sie es erneut.</p>
-    <button onclick="document.getElementById('display').style.display='none'">Schließen</button>
+    <button mat-raised-button onclick="document.getElementById('display').style.display='none'">Schließen</button>
   </div>
 </div>
 
@@ -62,7 +64,7 @@
   <div class="popup-content">
     <h2>Warum wird der Input nicht richtig angezeigt?</h2>
     <p>Versuchen Sie bitte, das Gerät zu entfernen und dann erneut anzuschließen. </p>
-    <button onclick="document.getElementById('connection').style.display='none'">Schließen</button>
+    <button mat-raised-button onclick="document.getElementById('connection').style.display='none'">Schließen</button>
   </div>
 </div>
 </div>

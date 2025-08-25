@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
+  imports: [MatButtonModule],
   selector: 'app-zoom-controls',
   templateUrl: './zoom-controls.component.html',
   styleUrls: ['./zoom-controls.component.css'],

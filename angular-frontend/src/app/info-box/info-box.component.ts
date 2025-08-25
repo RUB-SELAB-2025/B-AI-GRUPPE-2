@@ -42,7 +42,7 @@ export class InfoBoxComponent {
     return end - start;
   });
 
-  
+
   readonly lastViewedData = computed(() => this.graphState.rawData());
 
   //mouse tracking signals
@@ -83,7 +83,7 @@ readonly yVals = computed(() => {
     const values = channel.values;
     // Check if values exist and if the position is valid
     const val = (values && position >= 0 && position < values.length) ? values[position] : undefined;
-    
+
     // Round the value to 2 decimal places if it's a number, otherwise return 0
     return typeof val === 'number' ? Math.round(val * 100) / 100 : 0;
   });

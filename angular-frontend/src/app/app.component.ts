@@ -5,9 +5,14 @@ import { InfoBoxComponent } from './info-box/info-box.component';
 import { CsvExportService } from './omnai-datasource/csv-export.service';
 import { DummyDataService } from './omnai-datasource/dummy-data-server/dummy-data.service';
 
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, InfoBoxComponent],
+  imports: [RouterOutlet, InfoBoxComponent, MatButtonModule, MatIconModule, MatDividerModule, MatSlideToggleModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true,
@@ -17,6 +22,8 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
   @ViewChild(LineGraphComponent) lineGraph!: LineGraphComponent;
 
   private handleKeyBound = this.handleKey.bind(this);
+  private mousePos = false;
+  private yVals = false;
 
   ngAfterViewInit() {
     window.addEventListener('keydown', this.handleKeyBound);
@@ -53,28 +60,36 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
     this.csvExport.triggerDownload(csv, 'data.csv');
   }
 
+
+
   anwenden() {
-      const yVals = document.getElementById('yVals') as HTMLInputElement | null;
-      const mousePos = document.getElementById('mousePos') as HTMLInputElement | null;
       const infoBox = document.getElementById('info') as HTMLInputElement | null;
 
-      if(mousePos && mousePos.checked){
+      if(this.mousePos){
         this.infoBoxComponent.MouseTrackerActive = true
       }
       else{
         this.infoBoxComponent.MouseTrackerActive = false
       }
 
-      if(yVals && yVals.checked){
+      if(this.yVals){
         this.infoBoxComponent.yValDisplay = true
       }
       else{
         this.infoBoxComponent.yValDisplay = false
       }
 
-
       if(infoBox) {infoBox.style.display = 'none';}
     }
+
+
+  mousePosCh(event : any) {
+    this.mousePos = event.checked;
+  }
+
+  yValsCh(event : any) {
+    this.yVals = event.checked;
+  }
 
   ngAfterViewChecked(): void {
       if (typeof window !== "undefined") {
@@ -86,5 +101,4 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
         }
       }
   }
-
 }
