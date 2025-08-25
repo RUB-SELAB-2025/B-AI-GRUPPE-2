@@ -1,9 +1,10 @@
-import { Component, ViewChild, AfterViewInit, OnDestroy, viewChild, AfterViewChecked } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnDestroy, viewChild, AfterViewChecked, OnInit } from '@angular/core';
 import { LineGraphComponent } from './graph/views/line-graph/line-graph.component';
 import { RouterOutlet } from '@angular/router';
 import { InfoBoxComponent } from './info-box/info-box.component';
 import { CsvExportService } from './omnai-datasource/csv-export.service';
 import { DummyDataService } from './omnai-datasource/dummy-data-server/dummy-data.service';
+import { CommonModule } from '@angular/common';
 
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -12,7 +13,7 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, InfoBoxComponent, MatButtonModule, MatIconModule, MatDividerModule, MatSlideToggleModule],
+  imports: [CommonModule, RouterOutlet, InfoBoxComponent, MatButtonModule, MatIconModule, MatDividerModule, MatSlideToggleModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true,
@@ -24,6 +25,7 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
   private handleKeyBound = this.handleKey.bind(this);
   private mousePos = false;
   private yVals = false;
+  instructionSeen = false;
 
   ngAfterViewInit() {
     window.addEventListener('keydown', this.handleKeyBound);
@@ -40,6 +42,15 @@ export class AppComponent implements AfterViewChecked, AfterViewInit, OnDestroy 
     } else {
       console.warn('LineGraphComponent not yet initialized');
     }
+  }
+
+  ngOnInit() {
+    this.instructionSeen = localStorage.getItem("instructionSeen") === "true";
+  }
+
+  closeModal() {
+    this.instructionSeen = true;
+    localStorage.setItem("instructionSeen", "true");
   }
 
   ModifyWindow = false
