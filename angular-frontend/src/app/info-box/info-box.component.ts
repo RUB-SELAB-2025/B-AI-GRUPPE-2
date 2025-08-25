@@ -29,12 +29,20 @@ export class InfoBoxComponent {
   readonly lastViewedTime_end = computed(() => this.lastViewedTime()?.end ?? 0);
   readonly lastViewedTime_start = computed(() => this.lastViewedTime()?.start ?? 0);
 
+  firstTimeSet = false;
+  firstTime = 0;
+
   readonly lastViewedTime_diff = computed(() => {
+    if(!this.firstTimeSet && this.lastViewedTime_start() != 0){
+      this.firstTime = this.lastViewedTime_start();
+      this.firstTimeSet = true;
+    }
     const start = this.lastViewedTime_start();
     const end = this.lastViewedTime_end();
     return end - start;
   });
 
+  
   readonly lastViewedData = computed(() => this.graphState.rawData());
 
   //mouse tracking signals
@@ -96,8 +104,8 @@ readonly yVals = computed(() => {
     return 0; // default value if data is not ready
   });
 
-  MouseTrackerActive = false;
-  yValDisplay = false;
+  MouseTrackerActive = true;
+  yValDisplay = true;
   displayedChannel = 0;
 
   @HostListener('document:mousemove', ['$event'])

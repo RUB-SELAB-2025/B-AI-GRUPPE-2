@@ -1,7 +1,7 @@
 <div class="info-Box">
       <h4>Informationen zu den Daten</h4>
       @if(MouseTrackerActive) {         
-            <p>Maus Position: {{xVal()}} ms</p>
+            <p>Maus Position: {{xVal()-firstTime}} ms</p>
       }
        @if(yValDisplay) {         
             <div *ngFor="let yVal of yVals(); let i = index">
@@ -9,4 +9,3 @@
             </div>
        }
 </div>
-unas cosas
